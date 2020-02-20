@@ -18,7 +18,6 @@
 
 Tamago
 [たまご](https://en.wiktionary.org/wiki/%E3%81%9F%E3%81%BE%E3%81%94),
-
 which means "egg" will be a clone of the famous digital pet from 1996
 which bears a similar name.
 
