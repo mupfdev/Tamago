@@ -8,10 +8,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include "EEPROM.h"
 #include "FreeRTOS.h"
-#include "MCP24FC256.h"
-#include "STBrickLib.h"
 #include "System.h"
 #include "cmsis_os.h"
 #include "stm32f1xx_hal.h"
@@ -21,8 +18,7 @@ osThreadId hMainThread;
 
 static void     MainThread(void const* pArg);
 static uint16_t u16BlinkDelay = 1000;
-
-extern EepromData EEPROMData;
+extern uint8_t  GFXAssets[];
 
 /**
   * @brief  The application entry point.
@@ -33,11 +29,6 @@ int main(void)
     if (SYSTEM_OK != System_Init())
     {
         u16BlinkDelay = 100;
-    }
-
-    if (STATUS_OK != MCP24FC256_Write(0, (uint8_t*)&EEPROMData, 2))
-    {
-        u16BlinkDelay = 200;
     }
 
     osThreadDef(hMainThread, MainThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
@@ -58,6 +49,7 @@ static void MainThread(void const* pArg)
     while(1)
     {
         HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+
         osDelay(u16BlinkDelay);
     };
 }
