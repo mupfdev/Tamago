@@ -1,5 +1,3 @@
-[![Tamago logo](.media/logo.png)](.media/logo.png?raw=true "Tamago logo")
-
 # Tamago
 
 <p>

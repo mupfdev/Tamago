@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Beerware
 /**
- * @example   I2C.c
+ * @file      I2C.c
  * @brief     I²C interface
  * @author    Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)

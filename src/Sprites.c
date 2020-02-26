@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Beerware
 /**
- * @file      Assets.c
- * @brief     Tamago graphic assets
+ * @file      Sprites.c
+ * @brief     Tamago animation sprites
  * @author    Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 /**
- * @var   GFXAssets
- * @brief Tamago graphic assets
+ * @var   au8Sprite
+ * @brief Tamago animation sprites
  */
-const uint8_t GFXAssets[64 * 66] = {
+const uint8_t au8Sprite[64 * 66] = {
     /**
      * Name:   Egg 1 of 2
      * Offset: 0

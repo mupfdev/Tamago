@@ -14,11 +14,11 @@
 #include "stm32f1xx_hal.h"
 #include "task.h"
 
-osThreadId hMainThread;
+static TaskHandle_t      hMainThread = NULL;
+extern SPI_HandleTypeDef hspi1;
+extern uint8_t           au8Sprite[];
 
-static void     MainThread(void const* pArg);
-static uint16_t u16BlinkDelay = 1000;
-extern uint8_t  GFXAssets[];
+static void MainThread(void* pArg);
 
 /**
   * @brief  The application entry point.
@@ -26,13 +26,20 @@ extern uint8_t  GFXAssets[];
   */
 int main(void)
 {
+    static uint16_t u16Rate = 50;
+
     if (SYSTEM_OK != System_Init())
     {
-        u16BlinkDelay = 100;
+        u16Rate = 50;
     }
 
-    osThreadDef(hMainThread, MainThread, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
-    hMainThread = osThreadCreate(osThread(hMainThread), NULL);
+    xTaskCreate(
+        MainThread,
+        "Main thread",
+        configMINIMAL_STACK_SIZE,
+        &u16Rate,
+        osPriorityNormal,
+        &hMainThread);
 
     osKernelStart();
     while(1);
@@ -42,14 +49,17 @@ int main(void)
 
 /**
  * @brief Main thread handler
- * @param pArg: Unused
+ * @param pArg: Loop delay in ms
  */
-static void MainThread(void const* pArg)
+static void MainThread(void* pArg)
 {
+    uint16_t u16Buf = 0xafaf;
+
     while(1)
     {
         HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+        HAL_SPI_Transmit_IT(&hspi1, (uint8_t*)&u16Buf, 2);
 
-        osDelay(u16BlinkDelay);
+        osDelay(*(uint16_t*)pArg);
     };
 }
