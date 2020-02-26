@@ -19,7 +19,7 @@ Tamago
 which means "egg" will be a clone of the famous digital pet from 1996
 which bears a similar name.
 
-Tamago is not a classic handheld but rather a desk toy.
+Tamago is not a classic handheld but rather a wall clock.
 
 This project is built upon
 [BluePrint](https://github.com/mupfelofen-de/BluePrint), a base project
