@@ -49,6 +49,16 @@ Todo.
     > platformio run --target clean
 ```
 
+## Documentation
+
+The documentation can be generated using Doxygen:
+```
+doxygen
+```
+
+A automatically generated version of the documentation can be found
+here:  [Documentation](https://docs.dailyhack.eu/tamago/)
+
 ## Licence
 
 The source code of this software is licenced, unless stated otherwise,
