@@ -10,15 +10,9 @@
 #include <stdlib.h>
 #include "FreeRTOS.h"
 #include "System.h"
+#include "Tamago.h"
 #include "cmsis_os.h"
-#include "stm32f1xx_hal.h"
 #include "task.h"
-
-static TaskHandle_t      hMainThread = NULL;
-extern SPI_HandleTypeDef hspi1;
-extern uint8_t           au8Sprite[];
-
-static void MainThread(void* pArg);
 
 /**
   * @brief  The application entry point.
@@ -26,40 +20,20 @@ static void MainThread(void* pArg);
   */
 int main(void)
 {
-    static uint16_t u16Rate = 50;
-
     if (SYSTEM_OK != System_Init())
     {
-        u16Rate = 50;
+        return EXIT_FAILURE;
     }
 
-    xTaskCreate(
-        MainThread,
-        "Main thread",
-        configMINIMAL_STACK_SIZE,
-        &u16Rate,
-        osPriorityNormal,
-        &hMainThread);
-
-    osKernelStart();
-    while(1);
-
-    return EXIT_SUCCESS;
-}
-
-/**
- * @brief Main thread handler
- * @param pArg: Loop delay in ms
- */
-static void MainThread(void* pArg)
-{
-    uint16_t u16Buf = 0xafaf;
-
-    while(1)
+    if (! Tamago_Init())
     {
-        HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-        HAL_SPI_Transmit_IT(&hspi1, (uint8_t*)&u16Buf, 2);
+        return EXIT_FAILURE;
+    }
+    else
+    {
+        osKernelStart();
+    }
 
-        osDelay(*(uint16_t*)pArg);
-    };
+    while(1);
+    return EXIT_SUCCESS;
 }

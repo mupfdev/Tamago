@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Beerware
 /**
- * @file  Game.h
+ * @file  Tamago.h
  * @brief Tamago game handler
  */
 #pragma once
@@ -50,9 +50,9 @@ typedef enum
  */
 typedef struct
 {
-    uint8_t    au8Buffer[64]; ///< Buffer
-    AnimOffset eOffset;       ///< Animation offset
-    uint8_t    u8Length;      ///< Animation length/number of frames
+    uint8_t    au8Buffer[32][16]; ///< Buffer
+    AnimOffset eOffset;           ///< Animation offset
+    uint8_t    u8Length;          ///< Animation length/number of frames
 
 } Animation;
 
@@ -89,3 +89,5 @@ typedef struct
     Evolution eEvolution;      ///< Current evolution
 
 } Stats;
+
+int Tamago_Init(void);
