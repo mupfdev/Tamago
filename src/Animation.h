@@ -32,20 +32,20 @@
  */
 typedef enum
 {
-    INDEX_IDLE_EGG = 0,       ///< Offset, Egg idle animation
-    INDEX_HATCH_EGG,          ///< Offset, Babytchi idle animation
-    INDEX_IDLE_BABYTCHI,      ///< Offset, Babytchi idle animation
-    INDEX_IDLE_MARUTCHI,      ///< Offset, Marutchi idle animation
-    INDEX_IDLE_TAMATCHI,      ///< Offset, Tamatchi idle animation
-    INDEX_IDLE_KUCHITAMATCHI, ///< Offset, Kuchitamatchi idle animation
-    INDEX_IDLE_MAMETCHI,      ///< Offset, Mametchi idle animation
-    INDEX_IDLE_GINJIROTCHI,   ///< Offset, Ginjirotchi idle animation
-    INDEX_IDLE_MASKUTCHI,     ///< Offset, Maskutchi idle animation
-    INDEX_IDLE_KUCHIPATCHI,   ///< Offset, Kuchipatchi idle animation
-    INDEX_IDLE_NYOROTCHI,     ///< Offset, Nyorotchi idle animation
-    INDEX_IDLE_TARAKOTCHI,    ///< Offset, Tarakotchi idle animation
-    INDEX_IDLE_OYAJITCHI,     ///< Offset, Oyajotchi idle animation
-    INDEX_IDLE_OBAKETCHI,     ///< Offset, Obaketchi idle animation
+    INDEX_IDLE_EGG = 0,       ///< Index, Egg idle animation
+    INDEX_HATCH_EGG,          ///< Index, Babytchi idle animation
+    INDEX_IDLE_BABYTCHI,      ///< Index, Babytchi idle animation
+    INDEX_IDLE_MARUTCHI,      ///< Index, Marutchi idle animation
+    INDEX_IDLE_TAMATCHI,      ///< Index, Tamatchi idle animation
+    INDEX_IDLE_KUCHITAMATCHI, ///< Index, Kuchitamatchi idle animation
+    INDEX_IDLE_MAMETCHI,      ///< Index, Mametchi idle animation
+    INDEX_IDLE_GINJIROTCHI,   ///< Index, Ginjirotchi idle animation
+    INDEX_IDLE_MASKUTCHI,     ///< Index, Maskutchi idle animation
+    INDEX_IDLE_KUCHIPATCHI,   ///< Index, Kuchipatchi idle animation
+    INDEX_IDLE_NYOROTCHI,     ///< Index, Nyorotchi idle animation
+    INDEX_IDLE_TARAKOTCHI,    ///< Index, Tarakotchi idle animation
+    INDEX_IDLE_OYAJITCHI,     ///< Index, Oyajotchi idle animation
+    INDEX_IDLE_OBAKETCHI,     ///< Index, Obaketchi idle animation
     NUM_OF_ANIMATIONS         ///< Total number of animations
 
 } AnimIndex;
