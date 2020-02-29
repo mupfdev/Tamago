@@ -32,15 +32,15 @@ typedef enum
     OFFSET_IDLE_EGG           =    0, ///< Offset, Egg idle animation
     OFFSET_IDLE_BABYTCHI      =  128, ///< Offset, Babytchi idle animation
     OFFSET_IDLE_MARUTCHI      = 2432, ///< Offset, Marutchi idle animation
-    OFFSET_IDLE_TAMATCHI      = 4224, ///< Todo
-    OFFSET_IDLE_KUCHITAMATCHI = 4225, ///< Todo
-    OFFSET_IDLE_MAMETCHI      = 4226, ///< Todo
-    OFFSET_IDLE_GINJIROTCHI   = 4227, ///< Todo
-    OFFSET_IDLE_MASKUTCHI     = 4228, ///< Todo
-    OFFSET_IDLE_KUCHIPATCHI   = 4229, ///< Todo
-    OFFSET_IDLE_NYOROTCHI     = 4230, ///< Todo
-    OFFSET_IDLE_TARAKOTCHI    = 4231, ///< Todo
-    OFFSET_IDLE_OYAJITCHI     = 4232  ///< Todo
+    OFFSET_IDLE_TAMATCHI      = 4224, ///< Offset, Tamatchi idle animation
+    OFFSET_IDLE_KUCHITAMATCHI = 4352, ///< Offset, Kuchitamatchi idle animation
+    OFFSET_IDLE_MAMETCHI      = 5376, ///< Offset, Mametchi idle animation
+    OFFSET_IDLE_GINJIROTCHI   = 5504, ///< Offset, Ginjirotchi idle animation
+    OFFSET_IDLE_MASKUTCHI     = 6272, ///< Offset, Maskutchi idle animation
+    OFFSET_IDLE_KUCHIPATCHI   = 7040, ///< Offset, Kuchipatchi idle animation
+    OFFSET_IDLE_NYOROTCHI     = 8832, ///< Offset, Nyorotchi idle animation
+    OFFSET_IDLE_TARAKOTCHI    = 9856, ///< Offset, Tarakotchi idle animation
+    OFFSET_IDLE_OYAJITCHI     = 9984  ///< Offset, Oyajotchi idle animation
 
 } AnimOffset;
 
