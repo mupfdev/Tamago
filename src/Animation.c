@@ -33,7 +33,7 @@ static AnimationData stAnimation = { 0 };
  * @var   au8FrameData
  * @brief Tamago animation sprites
  */
-const uint8_t auFrameData[NUM_OF_FRAMES * FRAME_SIZE] = {
+const uint8_t au8FrameData[NUM_OF_FRAMES * FRAME_SIZE] = {
     /**
      * Name:   Egg, idle animation
      * Offset: 0 Byte
