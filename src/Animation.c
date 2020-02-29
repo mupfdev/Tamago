@@ -1,18 +1,39 @@
 // SPDX-License-Identifier: Beerware
 /**
- * @file      Sprites.c
- * @brief     Tamago animation sprites
+ * @file      Animation.c
+ * @brief     Tamago animation handler
  * @author    Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
+#include <stdbool.h>
 #include <stdint.h>
+#include "Animation.h"
 
 /**
- * @var   au8Sprite
+ * @struct AnimationData
+ * @brief  Animation handler data
+ */
+typedef struct
+{
+    uint8_t au8Buffer[64];             ///< Animation buffer
+    AnimSet astSet[NUM_OF_ANIMATIONS]; ///< Animation sets
+    bool    bShowPoo;                  ///< Show poo
+    bool    bShowSkull;                ///< Show skull
+
+} AnimationData;
+
+/**
+ * @var   stAnimation
+ * @brief Animation handler private data
+ */
+static AnimationData stAnimation = { 0 };
+
+/**
+ * @var   au8FrameData
  * @brief Tamago animation sprites
  */
-const uint8_t au8Sprite[64 * 164] = {
+const uint8_t auFrameData[NUM_OF_FRAMES * FRAME_SIZE] = {
     /**
      * Name:   Egg, idle animation
      * Offset: 0 Byte
@@ -52,8 +73,29 @@ const uint8_t au8Sprite[64 * 164] = {
     0b00000000, 0b00000110, 0b01100000, 0b00000000,
     0b00000000, 0b00001111, 0b11110000, 0b00000000,
     /**
-     * Name:   Babytchi, idle animation
+     * Name:   Egg, hatch animation
      * Offset: 128 Byte
+     * Length:   1 Frame
+     */
+    0b00000000, 0b00000000, 0b00000000, 0b00000000,
+    0b00000000, 0b00010010, 0b00000100, 0b00000000,
+    0b00000000, 0b00101000, 0b01001010, 0b00000000,
+    0b00000000, 0b01111000, 0b00001111, 0b00000000,
+    0b00000000, 0b11110011, 0b11000111, 0b00000000,
+    0b00000000, 0b10100100, 0b00100101, 0b00000000,
+    0b00000000, 0b11001010, 0b01010010, 0b00000000,
+    0b00000000, 0b00001001, 0b10010000, 0b00000000,
+    0b00000000, 0b00001001, 0b10010000, 0b00000000,
+    0b00000000, 0b10001000, 0b00010010, 0b00000000,
+    0b00000000, 0b00011100, 0b11011000, 0b00000000,
+    0b00000000, 0b00011011, 0b10111000, 0b00000000,
+    0b00000000, 0b00010110, 0b01101000, 0b00000000,
+    0b00000000, 0b00001110, 0b01110000, 0b00000000,
+    0b00000000, 0b00000101, 0b10100000, 0b00000000,
+    0b00000000, 0b00001111, 0b11110000, 0b00000000,
+    /**
+     * Name:   Babytchi, idle animation
+     * Offset: 192 Byte
      * Length:  36 Frames
      **/
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -669,7 +711,7 @@ const uint8_t au8Sprite[64 * 164] = {
     0b00000000, 0b00000011, 0b11111100, 0b00000000,
     /**
      * Name:   Marutchi, idle animation
-     * Offset: 2432 Byte
+     * Offset: 2496 Byte
      * Length:   28 Frames
      **/
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -1149,7 +1191,7 @@ const uint8_t au8Sprite[64 * 164] = {
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
     /**
      * Name:   Tamatchi, idle animation
-     * Offset: 4224 Byte
+     * Offset: 4288 Byte
      * Length:    2 Frames
      **/
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -1187,7 +1229,7 @@ const uint8_t au8Sprite[64 * 164] = {
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
     /**
      * Name:   Kuchitamatchi, idle animation
-     * Offset: 4352 Byte
+     * Offset: 4415 Byte
      * Length:   16 Frames
      **/
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -1463,7 +1505,7 @@ const uint8_t au8Sprite[64 * 164] = {
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
     /**
      * Name:   Mametchi, idle animation
-     * Offset: 5376 Byte
+     * Offset: 5440 Byte
      * Length:    2 Frames
      **/
     0b00000000, 0b00011000, 0b00110000, 0b00000000,
@@ -1501,7 +1543,7 @@ const uint8_t au8Sprite[64 * 164] = {
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
     /**
      * Name:   Ginjirotchi, idle animation
-     * Offset: 5504 Byte
+     * Offset: 5568 Byte
      * Length:   12 Frames
      **/
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -1709,7 +1751,7 @@ const uint8_t au8Sprite[64 * 164] = {
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
     /**
      * Name:   Maskutchi, idle animation
-     * Offset: 6272 Byte
+     * Offset: 6336 Byte
      * Length:   12 Frames
      **/
     0b00000000, 0b00000000, 0b11110000, 0b00000000,
@@ -1917,7 +1959,7 @@ const uint8_t au8Sprite[64 * 164] = {
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
     /**
      * Name:   Kuchipatchi, idle animation
-     * Offset: 7040 Byte
+     * Offset: 7104 Byte
      * Length:   28 Frames
      **/
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -2397,7 +2439,7 @@ const uint8_t au8Sprite[64 * 164] = {
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
     /**
      * Name:   Nyorotchi, idle animation
-     * Offset: 8832 Byte
+     * Offset: 8896 Byte
      * Length:   16 Frames
      **/
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -2673,7 +2715,7 @@ const uint8_t au8Sprite[64 * 164] = {
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
     /**
      * Name:   Tarakotchi, idle animation
-     * Offset: 9856 Byte
+     * Offset: 9920 Byte
      * Length:    2 Frames
      **/
     0b00000000, 0b00000111, 0b11110000, 0b00000000,
@@ -2711,8 +2753,8 @@ const uint8_t au8Sprite[64 * 164] = {
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
     /**
      * Name:   Oyajitchi, idle animation
-     * Offset: 9984 Byte
-     * Length:    8 Frames
+     * Offset: 10048 Byte
+     * Length:     8 Frames
      **/
     0b00000000, 0b00000000, 0b10000000, 0b00000000,
     0b00000000, 0b00000000, 0b01000000, 0b00000000,
@@ -2848,5 +2890,111 @@ const uint8_t au8Sprite[64 * 164] = {
     0b00000000, 0b01010110, 0b00011010, 0b00000000,
     0b00000000, 0b00101100, 0b11010100, 0b00000000,
     0b00000000, 0b01111111, 0b11111110, 0b00000000,
+    0b00000000, 0b00000000, 0b00000000, 0b00000000,
+    /**
+     * Name:   Obaketchi, idle animation
+     * Offset: 10560 Byte
+     * Length:     2 Frames
+     **/
+    0b00000000, 0b00000000, 0b00000000, 0b00000000,
+    0b00000001, 0b00000000, 0b00000001, 0b10000000,
+    0b00000010, 0b10000000, 0b00000001, 0b10000000,
+    0b00000100, 0b01000000, 0b00001111, 0b11110000,
+    0b00000111, 0b11000000, 0b00001111, 0b11110000,
+    0b00001001, 0b00100000, 0b00000001, 0b10000000,
+    0b00001111, 0b11100000, 0b00000001, 0b10000000,
+    0b00001100, 0b01100000, 0b00000001, 0b10000000,
+    0b00000111, 0b11000000, 0b00000111, 0b11100000,
+    0b00000111, 0b11000000, 0b00001000, 0b00010000,
+    0b00000001, 0b11011000, 0b00010011, 0b11001000,
+    0b00000000, 0b01100100, 0b00010000, 0b00001000,
+    0b00000000, 0b00000000, 0b00010011, 0b11001000,
+    0b00000000, 0b00000000, 0b00010000, 0b00001000,
+    0b00000000, 0b00000000, 0b00111111, 0b11111100,
+    0b00000000, 0b00000000, 0b00000000, 0b00000000,
+
+    0b00000000, 0b00000000, 0b00000000, 0b00000000,
+    0b00000000, 0b10000000, 0b00000001, 0b10000000,
+    0b00000001, 0b01000000, 0b00000001, 0b10000000,
+    0b00000010, 0b00100000, 0b00001111, 0b11110000,
+    0b00000011, 0b11100000, 0b00001111, 0b11110000,
+    0b00000100, 0b10010000, 0b00000001, 0b10000000,
+    0b00000111, 0b11110000, 0b00000001, 0b10000000,
+    0b00000110, 0b00110000, 0b00000001, 0b10000000,
+    0b00000011, 0b11100000, 0b00000111, 0b11100000,
+    0b00000011, 0b11100000, 0b00001000, 0b00010000,
+    0b00011011, 0b10000000, 0b00010011, 0b11001000,
+    0b00100110, 0b00000000, 0b00010000, 0b00001000,
+    0b00000000, 0b00000000, 0b00010011, 0b11001000,
+    0b00000000, 0b00000000, 0b00010000, 0b00001000,
+    0b00000000, 0b00000000, 0b00111111, 0b11111100,
     0b00000000, 0b00000000, 0b00000000, 0b00000000
 };
+
+/**
+ * @brief  Initialise animation handler
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
+ */
+int Animation_Init(void)
+{
+    // Initialise animation sets
+    stAnimation.astSet[INDEX_IDLE_EGG].eOffset            = OFFSET_IDLE_EGG;
+    stAnimation.astSet[INDEX_IDLE_EGG].u8Length           = LEN_IDLE_EGG;
+    stAnimation.astSet[INDEX_IDLE_EGG].u16Rate            = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_HATCH_EGG].eOffset           = OFFSET_HATCH_EGG;
+    stAnimation.astSet[INDEX_HATCH_EGG].u8Length          = LEN_HATCH_EGG;
+    stAnimation.astSet[INDEX_HATCH_EGG].u16Rate           = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_IDLE_BABYTCHI].eOffset       = OFFSET_IDLE_BABYTCHI;
+    stAnimation.astSet[INDEX_IDLE_BABYTCHI].u8Length      = LEN_IDLE_BABYTCHI;
+    stAnimation.astSet[INDEX_IDLE_BABYTCHI].u16Rate       = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_IDLE_MARUTCHI].eOffset       = OFFSET_IDLE_MARUTCHI;
+    stAnimation.astSet[INDEX_IDLE_MARUTCHI].u8Length      = LEN_IDLE_MARUTCHI;
+    stAnimation.astSet[INDEX_IDLE_MARUTCHI].u16Rate       = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_IDLE_TAMATCHI].eOffset       = OFFSET_IDLE_TAMATCHI;
+    stAnimation.astSet[INDEX_IDLE_TAMATCHI].u8Length      = LEN_IDLE_TAMATCHI;
+    stAnimation.astSet[INDEX_IDLE_TAMATCHI].u16Rate       = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_IDLE_KUCHITAMATCHI].eOffset  = OFFSET_IDLE_KUCHITAMATCHI;
+    stAnimation.astSet[INDEX_IDLE_KUCHITAMATCHI].u8Length = LEN_IDLE_KUCHITAMATCHI;
+    stAnimation.astSet[INDEX_IDLE_KUCHITAMATCHI].u16Rate  = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_IDLE_MAMETCHI].eOffset       = OFFSET_IDLE_MAMETCHI;
+    stAnimation.astSet[INDEX_IDLE_MAMETCHI].u8Length      = LEN_IDLE_MAMETCHI;
+    stAnimation.astSet[INDEX_IDLE_MAMETCHI].u16Rate       = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_IDLE_GINJIROTCHI].eOffset    = OFFSET_IDLE_GINJIROTCHI;
+    stAnimation.astSet[INDEX_IDLE_GINJIROTCHI].u8Length   = LEN_IDLE_GINJIROTCHI;
+    stAnimation.astSet[INDEX_IDLE_GINJIROTCHI].u16Rate    = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_IDLE_MASKUTCHI].eOffset      = OFFSET_IDLE_MASKUTCHI;
+    stAnimation.astSet[INDEX_IDLE_MASKUTCHI].u8Length     = LEN_IDLE_MASKUTCHI;
+    stAnimation.astSet[INDEX_IDLE_MASKUTCHI].u16Rate      = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_IDLE_KUCHIPATCHI].eOffset    = OFFSET_IDLE_KUCHIPATCHI;
+    stAnimation.astSet[INDEX_IDLE_KUCHIPATCHI].u8Length   = LEN_IDLE_KUCHIPATCHI;
+    stAnimation.astSet[INDEX_IDLE_KUCHIPATCHI].u16Rate    = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_IDLE_NYOROTCHI].eOffset      = OFFSET_IDLE_NYOROTCHI;
+    stAnimation.astSet[INDEX_IDLE_NYOROTCHI].u8Length     = LEN_IDLE_NYOROTCHI;
+    stAnimation.astSet[INDEX_IDLE_NYOROTCHI].u16Rate      = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_IDLE_TARAKOTCHI].eOffset     = OFFSET_IDLE_TARAKOTCHI;
+    stAnimation.astSet[INDEX_IDLE_TARAKOTCHI].u8Length    = LEN_IDLE_TARAKOTCHI;
+    stAnimation.astSet[INDEX_IDLE_TARAKOTCHI].u16Rate     = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_IDLE_OYAJITCHI].eOffset      = OFFSET_IDLE_OYAJITCHI;
+    stAnimation.astSet[INDEX_IDLE_OYAJITCHI].u8Length     = LEN_IDLE_OYAJITCHI;
+    stAnimation.astSet[INDEX_IDLE_OYAJITCHI].u16Rate      = DEFAULT_RATE;
+
+    stAnimation.astSet[INDEX_IDLE_OBAKETCHI].eOffset      = OFFSET_IDLE_OBAKETCHI;
+    stAnimation.astSet[INDEX_IDLE_OBAKETCHI].u8Length     = LEN_IDLE_OBAKETCHI;
+    stAnimation.astSet[INDEX_IDLE_OBAKETCHI].u16Rate      = 750;
+
+    return 0;
+}

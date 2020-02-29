@@ -8,9 +8,10 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include "Animation.h"
 #include "FreeRTOS.h"
+#include "LifeCycle.h"
 #include "System.h"
-#include "Tamago.h"
 #include "cmsis_os.h"
 #include "task.h"
 
@@ -25,7 +26,12 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    if (! Tamago_Init())
+    if (0 != Animation_Init())
+    {
+        return EXIT_FAILURE;
+    }
+
+    if (0 != LifeCycle_Init())
     {
         return EXIT_FAILURE;
     }
