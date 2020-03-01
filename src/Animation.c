@@ -13,6 +13,7 @@
 #include "System.h"
 #include "cmsis_os.h"
 #include "stm32f1xx_hal.h"
+#include "stm32f1xx_hal_spi.h"
 #include "task.h"
 
 extern SPI_HandleTypeDef hspi1;
@@ -3123,4 +3124,16 @@ static void AnimationThread(void* pArg)
         Animation_Update();
         osDelay(stAnimation.u16RefreshRate);
     }
+}
+
+/**
+ * @brief   Tx Transfer completed callback
+ * @details This callback will latch the current state of the LED panel
+ * @param   hspi
+ *          Pointer to SPI_HandleTypeDef structure that contains the
+ *          configuration information for SPI module
+ */
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    // Todo.
 }
