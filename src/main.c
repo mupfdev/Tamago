@@ -26,10 +26,7 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    if (0 != Animation_Init())
-    {
-        return EXIT_FAILURE;
-    }
+    Animation_Init();
 
     if (0 != LifeCycle_Init())
     {

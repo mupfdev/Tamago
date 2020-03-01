@@ -11,78 +11,41 @@
 #define NUM_OF_FRAMES         167 ///< Total number of frames
 #define DEFAULT_RATE          500 ///< Default refresh rate in ms
 
-#define LEN_IDLE_EGG            2 ///< Length, Egg idle animation
-#define LEN_HATCH_EGG           1 ///< Length, Egg idle animation
-#define LEN_IDLE_BABYTCHI      36 ///< Length, Babytchi idle animation
-#define LEN_IDLE_MARUTCHI      28 ///< Length, Marutchi idle animation
-#define LEN_IDLE_TAMATCHI       2 ///< Length, Tamatchi idle animation
-#define LEN_IDLE_KUCHITAMATCHI 16 ///< Length, Kuchitamatchi idle animation
-#define LEN_IDLE_MAMETCHI       2 ///< Length, Mametchi idle animation
-#define LEN_IDLE_GINJIROTCHI   12 ///< Length, Ginjirotchi idle animation
-#define LEN_IDLE_MASKUTCHI     12 ///< Length, Maskutchi idle animation
-#define LEN_IDLE_KUCHIPATCHI   28 ///< Length, Kuchipatchi idle animation
-#define LEN_IDLE_NYOROTCHI     16 ///< Length, Nyorotchi idle animation
-#define LEN_IDLE_TARAKOTCHI     2 ///< Length, Tarakotchi idle animation
-#define LEN_IDLE_OYAJITCHI      8 ///< Length, Oyajitchi idle animation
-#define LEN_IDLE_OBAKETCHI      2 ///< Length, Obaketchi idle animation
-
 /**
- * @enum  AnimIndex
- * @brief Animation indices
+ * @enum  AnimID
+ * @brief Animation IDs
  */
 typedef enum
 {
-    INDEX_IDLE_EGG = 0,       ///< Index, Egg idle animation
-    INDEX_HATCH_EGG,          ///< Index, Babytchi idle animation
-    INDEX_IDLE_BABYTCHI,      ///< Index, Babytchi idle animation
-    INDEX_IDLE_MARUTCHI,      ///< Index, Marutchi idle animation
-    INDEX_IDLE_TAMATCHI,      ///< Index, Tamatchi idle animation
-    INDEX_IDLE_KUCHITAMATCHI, ///< Index, Kuchitamatchi idle animation
-    INDEX_IDLE_MAMETCHI,      ///< Index, Mametchi idle animation
-    INDEX_IDLE_GINJIROTCHI,   ///< Index, Ginjirotchi idle animation
-    INDEX_IDLE_MASKUTCHI,     ///< Index, Maskutchi idle animation
-    INDEX_IDLE_KUCHIPATCHI,   ///< Index, Kuchipatchi idle animation
-    INDEX_IDLE_NYOROTCHI,     ///< Index, Nyorotchi idle animation
-    INDEX_IDLE_TARAKOTCHI,    ///< Index, Tarakotchi idle animation
-    INDEX_IDLE_OYAJITCHI,     ///< Index, Oyajotchi idle animation
-    INDEX_IDLE_OBAKETCHI,     ///< Index, Obaketchi idle animation
-    NUM_OF_ANIMATIONS         ///< Total number of animations
+    IDLE_EGG = 0,       ///< ID, Egg idle animation
+    HATCH_EGG,          ///< ID, Babytchi idle animation
+    IDLE_BABYTCHI,      ///< ID, Babytchi idle animation
+    IDLE_MARUTCHI,      ///< ID, Marutchi idle animation
+    IDLE_TAMATCHI,      ///< ID, Tamatchi idle animation
+    IDLE_KUCHITAMATCHI, ///< ID, Kuchitamatchi idle animation
+    IDLE_MAMETCHI,      ///< ID, Mametchi idle animation
+    IDLE_GINJIROTCHI,   ///< ID, Ginjirotchi idle animation
+    IDLE_MASKUTCHI,     ///< ID, Maskutchi idle animation
+    IDLE_KUCHIPATCHI,   ///< ID, Kuchipatchi idle animation
+    IDLE_NYOROTCHI,     ///< ID, Nyorotchi idle animation
+    IDLE_TARAKOTCHI,    ///< ID, Tarakotchi idle animation
+    IDLE_OYAJITCHI,     ///< ID, Oyajotchi idle animation
+    IDLE_OBAKETCHI,     ///< ID, Obaketchi idle animation
+    NUM_OF_ANIMATIONS   ///< Total number of animations
 
-} AnimIndex;
-
-/**
- * @enum  AnimOffset
- * @brief Animation offsets
- */
-typedef enum
-{
-    OFFSET_IDLE_EGG           =     0, ///< Offset, Egg idle animation
-    OFFSET_HATCH_EGG          =   128, ///< Offset, Babytchi idle animation
-    OFFSET_IDLE_BABYTCHI      =   192, ///< Offset, Babytchi idle animation
-    OFFSET_IDLE_MARUTCHI      =  2496, ///< Offset, Marutchi idle animation
-    OFFSET_IDLE_TAMATCHI      =  4288, ///< Offset, Tamatchi idle animation
-    OFFSET_IDLE_KUCHITAMATCHI =  4415, ///< Offset, Kuchitamatchi idle animation
-    OFFSET_IDLE_MAMETCHI      =  5440, ///< Offset, Mametchi idle animation
-    OFFSET_IDLE_GINJIROTCHI   =  5568, ///< Offset, Ginjirotchi idle animation
-    OFFSET_IDLE_MASKUTCHI     =  6336, ///< Offset, Maskutchi idle animation
-    OFFSET_IDLE_KUCHIPATCHI   =  7104, ///< Offset, Kuchipatchi idle animation
-    OFFSET_IDLE_NYOROTCHI     =  8896, ///< Offset, Nyorotchi idle animation
-    OFFSET_IDLE_TARAKOTCHI    =  9920, ///< Offset, Tarakotchi idle animation
-    OFFSET_IDLE_OYAJITCHI     = 10048, ///< Offset, Oyajotchi idle animation
-    OFFSET_IDLE_OBAKETCHI     = 10560  ///< Offset, Obaketchi idle animation
-
-} AnimOffset;
+} AnimID;
 
 /**
- * @struct AnimSet
- * @brief  Animation set
+ * @struct Animation
+ * @brief  Animation
  */
 typedef struct
 {
-    AnimOffset eOffset;  ///< Frame offset, animation start
-    uint8_t    u8Length; ///< Animation length/number of frames
-    uint16_t   u16Rate;  ///< Refresh rate in ms
+    uint16_t u16Offset; ///< Frame offset in byte
+    uint8_t  u8Length;  ///< Animation length/number of frames
 
-} AnimSet;
+} Animation;
 
-int Animation_Init(void);
+int  Animation_Init(void);
+void Animation_Set(AnimID eID);
+void Animation_Update(void);

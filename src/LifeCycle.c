@@ -11,10 +11,7 @@
 #include "LifeCycle.h"
 #include "System.h"
 #include "cmsis_os.h"
-#include "stm32f1xx_hal.h"
 #include "task.h"
-
-extern SPI_HandleTypeDef hspi1;
 
 static void LifeCycleThread(void* pArg);
 
@@ -24,9 +21,9 @@ static void LifeCycleThread(void* pArg);
  */
 typedef struct
 {
-    Stats        stStats;          ///< Statistics
     bool         bIsRunning;       ///< Is running state
     bool         bIsPaused;        ///< Pause status
+    Stats        stStats;          ///< Statistics
     TaskHandle_t hLifeCycleThread; ///< Life cycle thread handle
 
 } LifeCycleData;

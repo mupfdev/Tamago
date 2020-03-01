@@ -9,6 +9,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "Animation.h"
+#include "FreeRTOS.h"
+#include "System.h"
+#include "cmsis_os.h"
+#include "stm32f1xx_hal.h"
+#include "task.h"
+
+extern SPI_HandleTypeDef hspi1;
+
+static void AnimationThread(void* pArg);
 
 /**
  * @struct AnimationData
@@ -16,10 +25,16 @@
  */
 typedef struct
 {
-    uint8_t au8Buffer[64];             ///< Animation buffer
-    AnimSet astSet[NUM_OF_ANIMATIONS]; ///< Animation sets
-    bool    bShowPoo;                  ///< Show poo
-    bool    bShowSkull;                ///< Show skull
+    bool         bIsRunning;                ///< Is running state
+    Animation    astSet[NUM_OF_ANIMATIONS]; ///< Pre-initialised animations
+    AnimID       eAnim;                     ///< Current set animation (ID)
+    uint8_t      u8Frame;                   ///< Current animation frame
+    uint8_t      au8Buffer[64];             ///< Buffer for current animation frame
+    uint16_t     u16RefreshRate;            ///< Refresh rate in ms
+    bool         bShowPoo;                  ///< Show poo icon
+    bool         bShowSkull;                ///< Show skull icon
+    bool         bShowSleep;                ///< Show sleep icon
+    TaskHandle_t hAnimationThread;          ///< Animation thread handle
 
 } AnimationData;
 
@@ -28,6 +43,52 @@ typedef struct
  * @brief Animation handler private data
  */
 static AnimationData stAnimation = { 0 };
+
+/**
+ * @var   au8Icon
+ * @brief Animated icons
+ */
+const uint8_t au8Icon[48] = {
+    /**
+     * Name:   Poo icon
+     * Offset: 0 Byte
+     * Length: 2 Frames
+     */
+    0b00000000, 0b00000000,
+    0b10000000, 0b00000001,
+    0b01000100, 0b00100010,
+    0b10010010, 0b01001001,
+    0b00110100, 0b00101100,
+    0b01011000, 0b00011010,
+    0b10111100, 0b00111101,
+    0b11111100, 0b00111111,
+    /**
+     * Name:   Skull icon
+     * Offset: 16 Byte
+     * Length:  2 Frames
+     */
+    0b01111100, 0b00111110,
+    0b11111110, 0b01111111,
+    0b10010010, 0b01001001,
+    0b11111110, 0b01111111,
+    0b11101110, 0b01110111,
+    0b01111100, 0b00111110,
+    0b01010100, 0b00101010,
+    0b00000000, 0b00000000,
+    /**
+     * Name:   Sleep icon
+     * Offset: 32 Byte
+     * Length:  2 Frames
+     */
+    0b00000000, 0b00000000,
+    0b00001110, 0b00000000,
+    0b00000010, 0b11110000,
+    0b00000100, 0b00010000,
+    0b00001000, 0b00100000,
+    0b00101110, 0b01000000,
+    0b10000000, 0b10000000,
+    0b00000000, 0b11110000
+};
 
 /**
  * @var   au8FrameData
@@ -2939,62 +3000,127 @@ const uint8_t au8FrameData[NUM_OF_FRAMES * FRAME_SIZE] = {
  */
 int Animation_Init(void)
 {
-    // Initialise animation sets
-    stAnimation.astSet[INDEX_IDLE_EGG].eOffset            = OFFSET_IDLE_EGG;
-    stAnimation.astSet[INDEX_IDLE_EGG].u8Length           = LEN_IDLE_EGG;
-    stAnimation.astSet[INDEX_IDLE_EGG].u16Rate            = DEFAULT_RATE;
+    BaseType_t nStatus = pdPASS;
 
-    stAnimation.astSet[INDEX_HATCH_EGG].eOffset           = OFFSET_HATCH_EGG;
-    stAnimation.astSet[INDEX_HATCH_EGG].u8Length          = LEN_HATCH_EGG;
-    stAnimation.astSet[INDEX_HATCH_EGG].u16Rate           = DEFAULT_RATE;
+    stAnimation.u16RefreshRate = 500;
 
-    stAnimation.astSet[INDEX_IDLE_BABYTCHI].eOffset       = OFFSET_IDLE_BABYTCHI;
-    stAnimation.astSet[INDEX_IDLE_BABYTCHI].u8Length      = LEN_IDLE_BABYTCHI;
-    stAnimation.astSet[INDEX_IDLE_BABYTCHI].u16Rate       = DEFAULT_RATE;
+    // Initialise animations
+    const uint16_t au16Offset[NUM_OF_ANIMATIONS] = {
+        0,     ///< Offset, Egg idle
+        128,   ///< Offset, Babytchi idle
+        192,   ///< Offset, Babytchi idle
+        2496,  ///< Offset, Marutchi idle
+        4288,  ///< Offset, Tamatchi idle
+        4415,  ///< Offset, Kuchitamatchi idle
+        5440,  ///< Offset, Mametchi idle
+        5568,  ///< Offset, Ginjirotchi idle
+        6336,  ///< Offset, Maskutchi idle
+        7104,  ///< Offset, Kuchipatchi idle
+        8896,  ///< Offset, Nyorotchi idle
+        9920,  ///< Offset, Tarakotchi idle
+        10048, ///< Offset, Oyajotchi idle
+        10560  ///< Offset, Obaketchi idle
+    };
 
-    stAnimation.astSet[INDEX_IDLE_MARUTCHI].eOffset       = OFFSET_IDLE_MARUTCHI;
-    stAnimation.astSet[INDEX_IDLE_MARUTCHI].u8Length      = LEN_IDLE_MARUTCHI;
-    stAnimation.astSet[INDEX_IDLE_MARUTCHI].u16Rate       = DEFAULT_RATE;
+    const uint8_t au8Length[NUM_OF_ANIMATIONS] = {
+        2,  ///< Length, Egg idle
+        1,  ///< Length, Egg idle
+        36, ///< Length, Babytchi idle
+        28, ///< Length, Marutchi idle
+        2,  ///< Length, Tamatchi idle
+        16, ///< Length, Kuchitamatchi idle
+        2,  ///< Length, Mametchi idle
+        12, ///< Length, Ginjirotchi idle
+        12, ///< Length, Maskutchi idle
+        28, ///< Length, Kuchipatchi idle
+        16, ///< Length, Nyorotchi idle
+        2,  ///< Length, Tarakotchi idle
+        8,  ///< Length, Oyajitchi idle
+        2   ///< Length, Obaketchi idle
+    };
 
-    stAnimation.astSet[INDEX_IDLE_TAMATCHI].eOffset       = OFFSET_IDLE_TAMATCHI;
-    stAnimation.astSet[INDEX_IDLE_TAMATCHI].u8Length      = LEN_IDLE_TAMATCHI;
-    stAnimation.astSet[INDEX_IDLE_TAMATCHI].u16Rate       = DEFAULT_RATE;
+    for (uint8_t u8Index = 0; u8Index < NUM_OF_ANIMATIONS; u8Index++)
+    {
+        stAnimation.astSet[u8Index].u16Offset = au16Offset[u8Index];
+        stAnimation.astSet[u8Index].u8Length  = au8Length[u8Index];
+    }
 
-    stAnimation.astSet[INDEX_IDLE_KUCHITAMATCHI].eOffset  = OFFSET_IDLE_KUCHITAMATCHI;
-    stAnimation.astSet[INDEX_IDLE_KUCHITAMATCHI].u8Length = LEN_IDLE_KUCHITAMATCHI;
-    stAnimation.astSet[INDEX_IDLE_KUCHITAMATCHI].u16Rate  = DEFAULT_RATE;
+    stAnimation.bIsRunning = true;
 
-    stAnimation.astSet[INDEX_IDLE_MAMETCHI].eOffset       = OFFSET_IDLE_MAMETCHI;
-    stAnimation.astSet[INDEX_IDLE_MAMETCHI].u8Length      = LEN_IDLE_MAMETCHI;
-    stAnimation.astSet[INDEX_IDLE_MAMETCHI].u16Rate       = DEFAULT_RATE;
+    nStatus = xTaskCreate(
+        AnimationThread,
+        "Animation cycle",
+        configMINIMAL_STACK_SIZE,
+        NULL,
+        osPriorityNormal,
+        &stAnimation.hAnimationThread);
 
-    stAnimation.astSet[INDEX_IDLE_GINJIROTCHI].eOffset    = OFFSET_IDLE_GINJIROTCHI;
-    stAnimation.astSet[INDEX_IDLE_GINJIROTCHI].u8Length   = LEN_IDLE_GINJIROTCHI;
-    stAnimation.astSet[INDEX_IDLE_GINJIROTCHI].u16Rate    = DEFAULT_RATE;
+    if (pdPASS != nStatus)
+    {
+        return -1;
+    }
 
-    stAnimation.astSet[INDEX_IDLE_MASKUTCHI].eOffset      = OFFSET_IDLE_MASKUTCHI;
-    stAnimation.astSet[INDEX_IDLE_MASKUTCHI].u8Length     = LEN_IDLE_MASKUTCHI;
-    stAnimation.astSet[INDEX_IDLE_MASKUTCHI].u16Rate      = DEFAULT_RATE;
+    return (pdPASS != nStatus) ? (-1) : (0);
+}
 
-    stAnimation.astSet[INDEX_IDLE_KUCHIPATCHI].eOffset    = OFFSET_IDLE_KUCHIPATCHI;
-    stAnimation.astSet[INDEX_IDLE_KUCHIPATCHI].u8Length   = LEN_IDLE_KUCHIPATCHI;
-    stAnimation.astSet[INDEX_IDLE_KUCHIPATCHI].u16Rate    = DEFAULT_RATE;
+/**
+ * @brief Set current animation
+ * @param eID: Animation ID
+ */
+void Animation_Set(AnimID eID)
+{
+    stAnimation.eAnim = eID;
+}
 
-    stAnimation.astSet[INDEX_IDLE_NYOROTCHI].eOffset      = OFFSET_IDLE_NYOROTCHI;
-    stAnimation.astSet[INDEX_IDLE_NYOROTCHI].u8Length     = LEN_IDLE_NYOROTCHI;
-    stAnimation.astSet[INDEX_IDLE_NYOROTCHI].u16Rate      = DEFAULT_RATE;
+/**
+ * @brief Update animation buffer
+ */
+void Animation_Update(void)
+{
+    AnimID   eID       = stAnimation.eAnim;
+    uint16_t u16Offset = stAnimation.astSet[eID].u16Offset;
 
-    stAnimation.astSet[INDEX_IDLE_TARAKOTCHI].eOffset     = OFFSET_IDLE_TARAKOTCHI;
-    stAnimation.astSet[INDEX_IDLE_TARAKOTCHI].u8Length    = LEN_IDLE_TARAKOTCHI;
-    stAnimation.astSet[INDEX_IDLE_TARAKOTCHI].u16Rate     = DEFAULT_RATE;
+    u16Offset += (FRAME_SIZE * stAnimation.u8Frame);
 
-    stAnimation.astSet[INDEX_IDLE_OYAJITCHI].eOffset      = OFFSET_IDLE_OYAJITCHI;
-    stAnimation.astSet[INDEX_IDLE_OYAJITCHI].u8Length     = LEN_IDLE_OYAJITCHI;
-    stAnimation.astSet[INDEX_IDLE_OYAJITCHI].u16Rate      = DEFAULT_RATE;
+    for (uint8_t u8Index = 0; u8Index < FRAME_SIZE; u8Index++)
+    {
+        stAnimation.au8Buffer[u8Index] = au8FrameData[u16Offset + u8Index];
+    }
 
-    stAnimation.astSet[INDEX_IDLE_OBAKETCHI].eOffset      = OFFSET_IDLE_OBAKETCHI;
-    stAnimation.astSet[INDEX_IDLE_OBAKETCHI].u8Length     = LEN_IDLE_OBAKETCHI;
-    stAnimation.astSet[INDEX_IDLE_OBAKETCHI].u16Rate      = 750;
+    if (stAnimation.u8Frame < stAnimation.astSet[eID].u8Length)
+    {
+        stAnimation.u8Frame++;
+    }
+    else
+    {
+        stAnimation.u8Frame = 0;
+    }
 
-    return 0;
+    if (stAnimation.bShowPoo)
+    {
+        // Todo.
+    }
+
+    if (stAnimation.bShowSleep)
+    {
+        // Todo.
+    }
+    else if (stAnimation.bShowSkull)
+    {
+        // Todo.
+    }
+}
+
+/**
+ * @brief Animation thread
+ * @param pArg: Unused
+ */
+static void AnimationThread(void* pArg)
+{
+    while (stAnimation.bIsRunning)
+    {
+        HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+        Animation_Update();
+        osDelay(stAnimation.u16RefreshRate);
+    }
 }
