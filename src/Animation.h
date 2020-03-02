@@ -7,9 +7,11 @@
 
 #include <stdint.h>
 
-#define FRAME_SIZE             64 ///< Frame size in byte
-#define NUM_OF_FRAMES         167 ///< Total number of frames
-#define DEFAULT_RATE          500 ///< Default refresh rate in ms
+#define Latch_Pin       GPIO_PIN_3 ///< Latch pin
+#define Latch_GPIO_Port GPIOA      ///< Latch GPIO port
+
+#define FRAME_SIZE             64  ///< Frame size in byte
+#define NUM_OF_FRAMES         167  ///< Total number of frames
 
 /**
  * @enum  AnimID

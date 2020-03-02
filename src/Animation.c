@@ -14,9 +14,11 @@
 #include "cmsis_os.h"
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal_spi.h"
+#include "stm32f1xx_hal_tim.h"
 #include "task.h"
 
 extern SPI_HandleTypeDef hspi1;
+extern TIM_HandleTypeDef htim1;
 
 static void AnimationThread(void* pArg);
 
@@ -3001,9 +3003,19 @@ const uint8_t au8FrameData[NUM_OF_FRAMES * FRAME_SIZE] = {
  */
 int Animation_Init(void)
 {
-    BaseType_t nStatus = pdPASS;
+    BaseType_t       nStatus         = pdPASS;
+    GPIO_InitTypeDef GPIO_InitStruct = { 0 };
 
-    stAnimation.u16RefreshRate = 500;
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    HAL_GPIO_WritePin(Latch_GPIO_Port, Latch_Pin, GPIO_PIN_RESET);
+
+    GPIO_InitStruct.Pin   = Latch_Pin;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+
+    HAL_GPIO_Init(Latch_GPIO_Port, &GPIO_InitStruct);
 
     // Initialise animations
     const uint16_t au16Offset[NUM_OF_ANIMATIONS] = {
@@ -3046,6 +3058,9 @@ int Animation_Init(void)
         stAnimation.astSet[u8Index].u8Length  = au8Length[u8Index];
     }
 
+    Animation_Set(IDLE_KUCHIPATCHI);
+    Animation_SetRefreshRate(500);
+
     stAnimation.bIsRunning = true;
 
     nStatus = xTaskCreate(
@@ -3071,6 +3086,16 @@ int Animation_Init(void)
 void Animation_Set(AnimID eID)
 {
     stAnimation.eAnim = eID;
+}
+
+/**
+ * @brief Set refresh rate
+ * @param u16RefreshRate
+ *        Refresh rate in ms
+ */
+void Animation_SetRefreshRate(uint16_t u16RefreshRate)
+{
+    stAnimation.u16RefreshRate = u16RefreshRate;
 }
 
 /**
@@ -3110,6 +3135,8 @@ void Animation_Update(void)
     {
         // Todo.
     }
+
+    HAL_SPI_Transmit_IT(&hspi1, stAnimation.au8Buffer, FRAME_SIZE);
 }
 
 /**
@@ -3135,5 +3162,7 @@ static void AnimationThread(void* pArg)
  */
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    // Todo.
+    HAL_GPIO_WritePin(Latch_GPIO_Port, Latch_Pin, GPIO_PIN_SET);
+    System_DelayUS(1);
+    HAL_GPIO_WritePin(Latch_GPIO_Port, Latch_Pin, GPIO_PIN_RESET);
 }
