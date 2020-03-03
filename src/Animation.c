@@ -3007,15 +3007,35 @@ int Animation_Init(void)
     GPIO_InitTypeDef GPIO_InitStruct = { 0 };
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 
-    HAL_GPIO_WritePin(Latch_GPIO_Port, Latch_Pin, GPIO_PIN_RESET);
+    GPIO_InitStruct.Pin   = DMD_OE_Pin;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 
-    GPIO_InitStruct.Pin   = Latch_Pin;
+    HAL_GPIO_Init(DMD_OE_GPIO_Port, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin   = DMD_SCLK_Pin;
     GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 
-    HAL_GPIO_Init(Latch_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(DMD_SCLK_GPIO_Port, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin   = DMD_A_Pin;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+
+    HAL_GPIO_Init(DMD_A_GPIO_Port, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin   = DMD_B_Pin;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+
+    HAL_GPIO_Init(DMD_B_GPIO_Port, &GPIO_InitStruct);
 
     // Initialise animations
     const uint16_t au16Offset[NUM_OF_ANIMATIONS] = {
@@ -3162,7 +3182,7 @@ static void AnimationThread(void* pArg)
  */
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    HAL_GPIO_WritePin(Latch_GPIO_Port, Latch_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(DMD_SCLK_GPIO_Port, DMD_SCLK_Pin, GPIO_PIN_SET);
     System_DelayUS(1);
-    HAL_GPIO_WritePin(Latch_GPIO_Port, Latch_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(DMD_SCLK_GPIO_Port, DMD_SCLK_Pin, GPIO_PIN_RESET);
 }
