@@ -3039,37 +3039,37 @@ int Animation_Init(void)
 
     // Initialise animations
     const uint16_t au16Offset[NUM_OF_ANIMATIONS] = {
-        0,     ///< Offset, Egg idle
-        128,   ///< Offset, Babytchi idle
-        192,   ///< Offset, Babytchi idle
-        2496,  ///< Offset, Marutchi idle
-        4288,  ///< Offset, Tamatchi idle
-        4415,  ///< Offset, Kuchitamatchi idle
-        5440,  ///< Offset, Mametchi idle
-        5568,  ///< Offset, Ginjirotchi idle
-        6336,  ///< Offset, Maskutchi idle
-        7104,  ///< Offset, Kuchipatchi idle
-        8896,  ///< Offset, Nyorotchi idle
-        9920,  ///< Offset, Tarakotchi idle
-        10048, ///< Offset, Oyajotchi idle
-        10560  ///< Offset, Obaketchi idle
+        0,     // Offset, Egg idle
+        128,   // Offset, Babytchi idle
+        192,   // Offset, Babytchi idle
+        2496,  // Offset, Marutchi idle
+        4288,  // Offset, Tamatchi idle
+        4415,  // Offset, Kuchitamatchi idle
+        5440,  // Offset, Mametchi idle
+        5568,  // Offset, Ginjirotchi idle
+        6336,  // Offset, Maskutchi idle
+        7104,  // Offset, Kuchipatchi idle
+        8896,  // Offset, Nyorotchi idle
+        9920,  // Offset, Tarakotchi idle
+        10048, // Offset, Oyajotchi idle
+        10560  // Offset, Obaketchi idle
     };
 
     const uint8_t au8Length[NUM_OF_ANIMATIONS] = {
-        2,  ///< Length, Egg idle
-        1,  ///< Length, Egg idle
-        36, ///< Length, Babytchi idle
-        28, ///< Length, Marutchi idle
-        2,  ///< Length, Tamatchi idle
-        16, ///< Length, Kuchitamatchi idle
-        2,  ///< Length, Mametchi idle
-        12, ///< Length, Ginjirotchi idle
-        12, ///< Length, Maskutchi idle
-        28, ///< Length, Kuchipatchi idle
-        16, ///< Length, Nyorotchi idle
-        2,  ///< Length, Tarakotchi idle
-        8,  ///< Length, Oyajitchi idle
-        2   ///< Length, Obaketchi idle
+        2,  // Length, Egg idle
+        1,  // Length, Egg idle
+        36, // Length, Babytchi idle
+        28, // Length, Marutchi idle
+        2,  // Length, Tamatchi idle
+        16, // Length, Kuchitamatchi idle
+        2,  // Length, Mametchi idle
+        12, // Length, Ginjirotchi idle
+        12, // Length, Maskutchi idle
+        28, // Length, Kuchipatchi idle
+        16, // Length, Nyorotchi idle
+        2,  // Length, Tarakotchi idle
+        8,  // Length, Oyajitchi idle
+        2   // Length, Obaketchi idle
     };
 
     for (uint8_t u8Index = 0; u8Index < NUM_OF_ANIMATIONS; u8Index++)
