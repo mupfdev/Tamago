@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "Animation.h"
+#include "DMD.h"
 #include "FreeRTOS.h"
 #include "LifeCycle.h"
 #include "System.h"
@@ -26,16 +27,11 @@ int main(void)
         return EXIT_FAILURE;
     }
 
+    DMD_Init();
     Animation_Init();
+    LifeCycle_Init();
 
-    if (0 != LifeCycle_Init())
-    {
-        return EXIT_FAILURE;
-    }
-    else
-    {
-        osKernelStart();
-    }
+    osKernelStart();
 
     while(1);
     return EXIT_SUCCESS;
