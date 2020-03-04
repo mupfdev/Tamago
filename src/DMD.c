@@ -146,13 +146,13 @@ static void DMDThread(void* pArg)
 
     while (stDMD.bIsRunning)
     {
-        int offset = 4 * u8Scanline;
-        for (int i = 0; i < 4; i++)
+        uint16_t u16Offset = 4U * u8Scanline;
+        for (uint8_t u8Idx = 0; u8Idx < 4U; u8Idx++)
         {
-            HAL_SPI_Transmit_IT(&hspi1, stDMD.pucBuffer + (offset + i + 48), 1);
-            HAL_SPI_Transmit_IT(&hspi1, stDMD.pucBuffer + (offset + i + 32), 1);
-            HAL_SPI_Transmit_IT(&hspi1, stDMD.pucBuffer + (offset + i + 16), 1);
-            HAL_SPI_Transmit_IT(&hspi1, stDMD.pucBuffer + (offset + i),      1);
+            HAL_SPI_Transmit_IT(&hspi1, stDMD.pucBuffer + (u16Offset + u8Idx + 48), 1);
+            HAL_SPI_Transmit_IT(&hspi1, stDMD.pucBuffer + (u16Offset + u8Idx + 32), 1);
+            HAL_SPI_Transmit_IT(&hspi1, stDMD.pucBuffer + (u16Offset + u8Idx + 16), 1);
+            HAL_SPI_Transmit_IT(&hspi1, stDMD.pucBuffer + (u16Offset + u8Idx),      1);
         }
 
         DMD_OE_RowsOff();
