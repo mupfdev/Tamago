@@ -7,39 +7,6 @@
 
 #include <stdint.h>
 
-/**
- * @page    DMD Dot Matrix Display
- * @section DMDHowTo How to connect
- * @code{.unparsed}
- *
- *      +-----+
- *      |     |           OE¹  ---> PB5
- * OE   | . . |  A        A    ---> PA1
- * GND  | . . |  B        B    ---> PA0
- * GND  | . . |  NC       CLK  ---> PA5 (SPI1_SCK)
- * GND    . . |  CLK      SCLK ---> PA3
- * GND    . . |  SCLK     R    ---> PA8 (SPI1_MOSI)
- * GND  | . . |  R
- * GND  | . . |  NC
- * GND  | . . |  NC
- *      |     |
- *      +-----+
- *
- * ¹ Setting OE low, lights all LEDs in the selected row.
- *   Or PWM for brightness control.
- *
- * @endcode
- */
-
-#define DMD_OE_Pin         GPIO_PIN_5 ///< DMD OE pin
-#define DMD_OE_GPIO_Port   GPIOB      ///< DMD OE GPIO port
-#define DMD_SCLK_Pin       GPIO_PIN_3 ///< DMD SCLK pin
-#define DMD_SCLK_GPIO_Port GPIOA      ///< DMD SCLK GPIO port
-#define DMD_A_Pin          GPIO_PIN_1 ///< DMD A pin
-#define DMD_A_GPIO_Port    GPIOA      ///< DMD A GPIO port
-#define DMD_B_Pin          GPIO_PIN_0 ///< DMD B pin
-#define DMD_B_GPIO_Port    GPIOA      ///< DMD B GPIO port
-
 #define FRAME_SIZE             64     ///< Frame size in byte
 #define NUM_OF_FRAMES         167     ///< Total number of frames
 

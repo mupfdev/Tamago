@@ -9,16 +9,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "Animation.h"
+#include "DMD.h"
 #include "FreeRTOS.h"
 #include "System.h"
 #include "cmsis_os.h"
-#include "stm32f1xx_hal.h"
-#include "stm32f1xx_hal_spi.h"
-#include "stm32f1xx_hal_tim.h"
 #include "task.h"
-
-extern SPI_HandleTypeDef hspi1;
-extern TIM_HandleTypeDef htim1;
+#include "stm32f1xx_hal.h"
+#include "stm32f1xx_hal_gpio.h"
 
 static void AnimationThread(void* pArg);
 
@@ -28,7 +25,7 @@ static void AnimationThread(void* pArg);
  */
 typedef struct
 {
-    bool         bIsRunning;                ///< Is running state
+    bool         bIsRunning;                ///< Running state
     Animation    astSet[NUM_OF_ANIMATIONS]; ///< Pre-initialised animations
     AnimID       eAnim;                     ///< Current set animation (ID)
     uint8_t      u8Frame;                   ///< Current animation frame
@@ -3003,39 +3000,7 @@ const uint8_t au8FrameData[NUM_OF_FRAMES * FRAME_SIZE] = {
  */
 int Animation_Init(void)
 {
-    BaseType_t       nStatus         = pdPASS;
-    GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-
-    GPIO_InitStruct.Pin   = DMD_OE_Pin;
-    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull  = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-
-    HAL_GPIO_Init(DMD_OE_GPIO_Port, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin   = DMD_SCLK_Pin;
-    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-
-    HAL_GPIO_Init(DMD_SCLK_GPIO_Port, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin   = DMD_A_Pin;
-    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-
-    HAL_GPIO_Init(DMD_A_GPIO_Port, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin   = DMD_B_Pin;
-    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-
-    HAL_GPIO_Init(DMD_B_GPIO_Port, &GPIO_InitStruct);
+    BaseType_t nStatus = pdPASS;
 
     // Initialise animations
     const uint16_t au16Offset[NUM_OF_ANIMATIONS] = {
@@ -3078,23 +3043,13 @@ int Animation_Init(void)
         stAnimation.astSet[u8Index].u8Length  = au8Length[u8Index];
     }
 
-    Animation_Set(IDLE_KUCHIPATCHI);
-    Animation_SetRefreshRate(500);
-
-    stAnimation.bIsRunning = true;
-
     nStatus = xTaskCreate(
         AnimationThread,
-        "Animation cycle",
+        "AnimHandler",
         configMINIMAL_STACK_SIZE,
         NULL,
         osPriorityNormal,
         &stAnimation.hAnimationThread);
-
-    if (pdPASS != nStatus)
-    {
-        return -1;
-    }
 
     return (pdPASS != nStatus) ? (-1) : (0);
 }
@@ -3133,11 +3088,8 @@ void Animation_Update(void)
         stAnimation.au8Buffer[u8Index] = au8FrameData[u16Offset + u8Index];
     }
 
-    if (stAnimation.u8Frame < stAnimation.astSet[eID].u8Length)
-    {
-        stAnimation.u8Frame++;
-    }
-    else
+    stAnimation.u8Frame++;
+    if (stAnimation.u8Frame >= stAnimation.astSet[eID].u8Length)
     {
         stAnimation.u8Frame = 0;
     }
@@ -3156,7 +3108,7 @@ void Animation_Update(void)
         // Todo.
     }
 
-    HAL_SPI_Transmit_IT(&hspi1, stAnimation.au8Buffer, FRAME_SIZE);
+    DMD_SetBuffer((unsigned char*)&stAnimation.au8Buffer);
 }
 
 /**
@@ -3165,24 +3117,13 @@ void Animation_Update(void)
  */
 static void AnimationThread(void* pArg)
 {
+    stAnimation.bIsRunning = true;
+
     while (stAnimation.bIsRunning)
     {
         HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
         Animation_Update();
+
         osDelay(stAnimation.u16RefreshRate);
     }
-}
-
-/**
- * @brief   Tx Transfer completed callback
- * @details This callback will latch the current state of the LED panel
- * @param   hspi
- *          Pointer to SPI_HandleTypeDef structure that contains the
- *          configuration information for SPI module
- */
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-    HAL_GPIO_WritePin(DMD_SCLK_GPIO_Port, DMD_SCLK_Pin, GPIO_PIN_SET);
-    System_DelayUS(1);
-    HAL_GPIO_WritePin(DMD_SCLK_GPIO_Port, DMD_SCLK_Pin, GPIO_PIN_RESET);
 }
