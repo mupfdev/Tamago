@@ -182,14 +182,3 @@ static void DMDThread(void* pArg)
         osDelay(5);
     }
 }
-
-/**
- * @brief   Tx Transfer completed callback
- * @details This callback will latch the current state of the LED panel
- * @param   hspi
- *          Pointer to SPI_HandleTypeDef structure that contains the
- *          configuration information for SPI module
- */
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-}
