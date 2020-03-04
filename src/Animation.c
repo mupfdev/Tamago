@@ -1290,7 +1290,7 @@ const uint8_t au8FrameData[NUM_OF_FRAMES * FRAME_SIZE] = {
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
     /**
      * Name:   Kuchitamatchi, idle animation
-     * Offset: 4415 Byte
+     * Offset: 4416 Byte
      * Length:   16 Frames
      **/
     0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -3009,7 +3009,7 @@ int Animation_Init(void)
         192,   // Offset, Babytchi idle
         2496,  // Offset, Marutchi idle
         4288,  // Offset, Tamatchi idle
-        4415,  // Offset, Kuchitamatchi idle
+        4416,  // Offset, Kuchitamatchi idle
         5440,  // Offset, Mametchi idle
         5568,  // Offset, Ginjirotchi idle
         6336,  // Offset, Maskutchi idle
@@ -3081,6 +3081,8 @@ void Animation_Update(void)
     AnimID   eID       = stAnimation.eAnim;
     uint16_t u16Offset = stAnimation.astSet[eID].u16Offset;
 
+    static uint8_t u8IconOffset = 0;
+
     u16Offset += (FRAME_SIZE * stAnimation.u8Frame);
 
     for (uint8_t u8Index = 0; u8Index < FRAME_SIZE; u8Index++)
@@ -3094,19 +3096,37 @@ void Animation_Update(void)
         stAnimation.u8Frame = 0;
     }
 
+    // Todo: add functions to manipulate image buffer
     if (stAnimation.bShowPoo)
     {
-        // Todo.
+        uint8_t u8Offset = u8IconOffset + 0;
+        for (uint8_t u8Idx = 35; u8Idx <= 63; u8Idx += 4)
+        {
+            stAnimation.au8Buffer[u8Idx] = au8Icon[u8Offset];
+            u8Offset += 2;
+        }
     }
 
     if (stAnimation.bShowSleep)
     {
-        // Todo.
+        uint8_t u8Offset = u8IconOffset + 32;
+        for (uint8_t u8Idx = 3; u8Idx <= 31; u8Idx += 4)
+        {
+            stAnimation.au8Buffer[u8Idx] = au8Icon[u8Offset];
+            u8Offset += 2;
+        }
     }
     else if (stAnimation.bShowSkull)
     {
-        // Todo.
+        uint8_t u8Offset = u8IconOffset + 16;
+        for (uint8_t u8Idx = 3; u8Idx <= 31; u8Idx += 4)
+        {
+            stAnimation.au8Buffer[u8Idx] = au8Icon[u8Offset];
+            u8Offset += 2;
+        }
     }
+
+    u8IconOffset = !u8IconOffset;
 
     DMD_SetBuffer((unsigned char*)&stAnimation.au8Buffer);
 }
