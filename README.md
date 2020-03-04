@@ -17,7 +17,7 @@
 Tamago [たま
 ご](https://en.wiktionary.org/wiki/%E3%81%9F%E3%81%BE%E3%81%94), which
 means "egg" will be a clone of the famous digital pet from 1996 that
-uses a P10 LED panel as its display.
+uses a P10 LED panel as a display.
 
 This project is built upon
 [BluePrint](https://github.com/mupfelofen-de/BluePrint), a base project
