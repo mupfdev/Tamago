@@ -7,6 +7,7 @@
  */
 
 #include <stdbool.h>
+#include "Animation.h"
 #include "FreeRTOS.h"
 #include "LifeCycle.h"
 #include "System.h"
@@ -68,13 +69,53 @@ int LifeCycle_Init(void)
  */
 static void LifeCycleThread(void* pArg)
 {
+    static uint16_t u16Seconds = 0;
+
     while (stLifeCycle.bIsRunning)
     {
+        uint32_t* pu32Age = &stLifeCycle.stStats.u32AgeInSeconds;
+
         if (stLifeCycle.bIsPaused)
         {
             osDelay(1);
             continue;
         }
+
+        // Demo cycle.
+        if (300 >= *pu32Age)
+        {
+            Animation_SetRefreshRate(500);
+            Animation_Set(IDLE_EGG);
+        }
+        else if (302 >= *pu32Age)
+        {
+            Animation_Set(HATCH_EGG);
+        }
+        else if (3900 >= *pu32Age)
+        {
+            Animation_Set(IDLE_BABYTCHI);
+        }
+        else if (7500 >= *pu32Age)
+        {
+            Animation_Set(IDLE_MARUTCHI);
+        }
+        else if (18300 >= *pu32Age)
+        {
+            Animation_Set(IDLE_KUCHITAMATCHI);
+        }
+        else if (25500 >= *pu32Age)
+        {
+            Animation_Set(IDLE_KUCHIPATCHI);
+        }
+        // Demo cycle end
+
         osDelay(1);
+
+        u16Seconds++;
+        if (u16Seconds == 1000)
+        {
+            stLifeCycle.stStats.u32AgeInSeconds++;
+            u16Seconds = 0;
+        }
     }
 }

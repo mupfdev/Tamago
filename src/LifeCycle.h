@@ -35,7 +35,7 @@ typedef enum
  */
 typedef struct
 {
-    uint8_t   u8Age;           ///< Age in days
+    uint32_t  u32AgeInSeconds; ///< Age in seconds
     uint16_t  u16CareMistages; ///< Number of care mistakes
     Evolution eEvolution;      ///< Current evolution
 
