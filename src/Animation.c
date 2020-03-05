@@ -3005,7 +3005,7 @@ int Animation_Init(void)
     // Initialise animations
     const uint16_t au16Offset[NUM_OF_ANIMATIONS] = {
         0,     // Offset, Egg idle
-        128,   // Offset, Babytchi idle
+        128,   // Offset, Egg hatch
         192,   // Offset, Babytchi idle
         2496,  // Offset, Marutchi idle
         4288,  // Offset, Tamatchi idle
@@ -3022,7 +3022,7 @@ int Animation_Init(void)
 
     const uint8_t au8Length[NUM_OF_ANIMATIONS] = {
         2,  // Length, Egg idle
-        1,  // Length, Egg idle
+        1,  // Length, Egg hatch
         36, // Length, Babytchi idle
         28, // Length, Marutchi idle
         2,  // Length, Tamatchi idle
