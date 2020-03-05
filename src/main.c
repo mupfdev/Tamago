@@ -6,6 +6,7 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include "Animation.h"
@@ -16,23 +17,54 @@
 #include "cmsis_os.h"
 #include "task.h"
 
+static void _MainThread(void* pArg);
+
+static TaskHandle_t _hMainThread; ///< Main thread handle
+
 /**
   * @brief  The application entry point.
   * @retval int
   */
 int main(void)
 {
-    if (SYSTEM_OK != System_Init())
-    {
-        return EXIT_FAILURE;
-    }
+    BaseType_t nStatus = pdPASS;
 
+    System_Init();
     DMD_Init();
     Animation_Init();
     LifeCycle_Init();
 
-    osKernelStart();
+    nStatus = xTaskCreate(
+        _MainThread,
+        "Main",
+        configMINIMAL_STACK_SIZE,
+        NULL,
+        osPriorityNormal,
+        &_hMainThread);
+
+    if (pdPASS == nStatus)
+    {
+        osKernelStart();
+    }
 
     while(1);
     return EXIT_SUCCESS;
+}
+
+/**
+ * @brief Main application thread
+ * @param pArg: Unused
+ */
+static void _MainThread(void* pArg)
+{
+    Animation_Set(IDLE_EGG);
+    Animation_ShowIcon(ICON_POO, true);
+    Animation_SetUpdateRate(500);
+    DMD_SetBuffer(Animation_GetBufferAddr());
+
+    while (1)
+    {
+        // Todo.
+        osDelay(5);
+    }
 }

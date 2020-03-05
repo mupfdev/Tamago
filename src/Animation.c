@@ -9,15 +9,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "Animation.h"
-#include "DMD.h"
 #include "FreeRTOS.h"
-#include "System.h"
 #include "cmsis_os.h"
 #include "task.h"
 #include "stm32f1xx_hal.h"
-#include "stm32f1xx_hal_gpio.h"
 
-static void AnimationThread(void* pArg);
+static void _AddIconToBuffer(const IconID eID, uint8_t u8IconOffset);
+static void _AnimationThread(void* pArg);
 
 /**
  * @struct AnimationData
@@ -30,7 +28,7 @@ typedef struct
     AnimID       eAnim;                     ///< Current set animation (ID)
     uint8_t      u8Frame;                   ///< Current animation frame
     uint8_t      au8Buffer[64];             ///< Buffer for current animation frame
-    uint16_t     u16RefreshRate;            ///< Refresh rate in ms
+    uint16_t     u16UpdateRate;             ///< Update rate in ms
     bool         bShowPoo;                  ///< Show poo icon
     bool         bShowSkull;                ///< Show skull icon
     bool         bShowSleep;                ///< Show sleep icon
@@ -39,16 +37,16 @@ typedef struct
 } AnimationData;
 
 /**
- * @var   stAnimation
+ * @var   _stAnimation
  * @brief Animation handler private data
  */
-static AnimationData stAnimation = { 0 };
+static AnimationData _stAnimation = { 0 };
 
 /**
- * @var   au8Icon
+ * @var   _au8Icon
  * @brief Animated icons
  */
-const uint8_t au8Icon[48] = {
+static const uint8_t _au8Icon[48] = {
     /**
      * Name:   Poo icon
      * Offset: 0 Byte
@@ -91,10 +89,10 @@ const uint8_t au8Icon[48] = {
 };
 
 /**
- * @var   au8FrameData
+ * @var   _au8FrameData
  * @brief Tamago animation sprites
  */
-const uint8_t au8FrameData[NUM_OF_FRAMES * FRAME_SIZE] = {
+static const uint8_t _au8FrameData[NUM_OF_FRAMES * FRAME_SIZE] = {
     /**
      * Name:   Egg, idle animation
      * Offset: 0 Byte
@@ -3039,19 +3037,51 @@ int Animation_Init(void)
 
     for (uint8_t u8Index = 0; u8Index < NUM_OF_ANIMATIONS; u8Index++)
     {
-        stAnimation.astSet[u8Index].u16Offset = au16Offset[u8Index];
-        stAnimation.astSet[u8Index].u8Length  = au8Length[u8Index];
+        _stAnimation.astSet[u8Index].u16Offset = au16Offset[u8Index];
+        _stAnimation.astSet[u8Index].u8Length  = au8Length[u8Index];
     }
 
     nStatus = xTaskCreate(
-        AnimationThread,
+        _AnimationThread,
         "AnimHandler",
         configMINIMAL_STACK_SIZE,
         NULL,
         osPriorityNormal,
-        &stAnimation.hAnimationThread);
+        &_stAnimation.hAnimationThread);
 
     return (pdPASS != nStatus) ? (-1) : (0);
+}
+
+/**
+ * @brief  Get address of image buffer
+ * @return Pointer to image buffer
+ */
+uint8_t* Animation_GetBufferAddr(void)
+{
+    return (unsigned char*)&_stAnimation.au8Buffer;
+}
+
+/**
+ * @brief Show (or hide) icon
+ * @param eID
+ *        Icon ID
+ * @param bShow
+ *        false: hide icon, true: show icon
+ */
+void Animation_ShowIcon(IconID eID, bool bShow)
+{
+    switch (eID)
+    {
+        case ICON_POO:
+            _stAnimation.bShowPoo   = bShow;
+            break;
+        case ICON_SKULL:
+            _stAnimation.bShowSkull = bShow;
+            break;
+        case ICON_SLEEP:
+            _stAnimation.bShowSleep = bShow;
+            break;
+    }
 }
 
 /**
@@ -3060,17 +3090,17 @@ int Animation_Init(void)
  */
 void Animation_Set(AnimID eID)
 {
-    stAnimation.eAnim = eID;
+    _stAnimation.eAnim = eID;
 }
 
 /**
- * @brief Set refresh rate
- * @param u16RefreshRate
- *        Refresh rate in ms
+ * @brief Set update rate
+ * @param u16UpdateRate
+ *        Update rate in ms
  */
-void Animation_SetRefreshRate(uint16_t u16RefreshRate)
+void Animation_SetUpdateRate(uint16_t u16UpdateRate)
 {
-    stAnimation.u16RefreshRate = u16RefreshRate;
+    _stAnimation.u16UpdateRate = u16UpdateRate;
 }
 
 /**
@@ -3078,72 +3108,95 @@ void Animation_SetRefreshRate(uint16_t u16RefreshRate)
  */
 void Animation_Update(void)
 {
-    AnimID   eID       = stAnimation.eAnim;
-    uint16_t u16Offset = stAnimation.astSet[eID].u16Offset;
-
     static uint8_t u8IconOffset = 0;
 
-    u16Offset += (FRAME_SIZE * stAnimation.u8Frame);
+    AnimID   eID       = _stAnimation.eAnim;
+    uint16_t u16Offset = _stAnimation.astSet[eID].u16Offset;
+
+    u16Offset += (FRAME_SIZE * _stAnimation.u8Frame);
 
     for (uint8_t u8Index = 0; u8Index < FRAME_SIZE; u8Index++)
     {
-        stAnimation.au8Buffer[u8Index] = au8FrameData[u16Offset + u8Index];
+        _stAnimation.au8Buffer[u8Index] = _au8FrameData[u16Offset + u8Index];
     }
 
-    stAnimation.u8Frame++;
-    if (stAnimation.u8Frame >= stAnimation.astSet[eID].u8Length)
+    _stAnimation.u8Frame++;
+    if (_stAnimation.u8Frame >= _stAnimation.astSet[eID].u8Length)
     {
-        stAnimation.u8Frame = 0;
+        _stAnimation.u8Frame = 0;
     }
 
-    // Todo: add functions to manipulate image buffer
-    if (stAnimation.bShowPoo)
+    if (_stAnimation.bShowPoo)
     {
-        uint8_t u8Offset = u8IconOffset + 0;
-        for (uint8_t u8Idx = 35; u8Idx <= 63; u8Idx += 4)
-        {
-            stAnimation.au8Buffer[u8Idx] = au8Icon[u8Offset];
-            u8Offset += 2;
-        }
+        _AddIconToBuffer(ICON_POO, u8IconOffset);
     }
 
-    if (stAnimation.bShowSleep)
+    if (_stAnimation.bShowSleep)
     {
-        uint8_t u8Offset = u8IconOffset + 32;
-        for (uint8_t u8Idx = 3; u8Idx <= 31; u8Idx += 4)
-        {
-            stAnimation.au8Buffer[u8Idx] = au8Icon[u8Offset];
-            u8Offset += 2;
-        }
+        _AddIconToBuffer(ICON_SLEEP, u8IconOffset);
     }
-    else if (stAnimation.bShowSkull)
+    else if (_stAnimation.bShowSkull)
     {
-        uint8_t u8Offset = u8IconOffset + 16;
-        for (uint8_t u8Idx = 3; u8Idx <= 31; u8Idx += 4)
-        {
-            stAnimation.au8Buffer[u8Idx] = au8Icon[u8Offset];
-            u8Offset += 2;
-        }
+        _AddIconToBuffer(ICON_SKULL, u8IconOffset);
     }
 
     u8IconOffset = !u8IconOffset;
+}
 
-    DMD_SetBuffer((unsigned char*)&stAnimation.au8Buffer);
+/**
+ * @brief Add icon to image buffer
+ * @param eID
+ *        Icon ID
+ * @param u8IconOffset
+ *        Icon offset
+ */
+static void _AddIconToBuffer(const IconID eID, uint8_t u8IconOffset)
+{
+    uint8_t u8Offset = 0;
+    uint8_t u8Start  = 0;
+    uint8_t u8End    = 0;
+
+    switch (eID)
+    {
+        case ICON_POO:
+            u8Offset =  0;
+            u8Start  = 35;
+            u8End    = 63;
+            break;
+        case ICON_SKULL:
+            u8Offset = 16;
+            u8Start  =  3;
+            u8End    = 31;
+            break;
+        case ICON_SLEEP:
+            u8Offset = 32;
+            u8Start  =  3;
+            u8End    = 31;
+            break;
+    }
+
+    u8Offset = u8IconOffset + u8Offset;
+    for (uint8_t u8Idx = u8Start; u8Idx <= u8End; u8Idx += 4)
+    {
+        _stAnimation.au8Buffer[u8Idx] = _au8Icon[u8Offset];
+        u8Offset += 2;
+    }
+
+    u8IconOffset = !u8IconOffset;
 }
 
 /**
  * @brief Animation thread
  * @param pArg: Unused
  */
-static void AnimationThread(void* pArg)
+static void _AnimationThread(void* pArg)
 {
-    stAnimation.bIsRunning = true;
+    _stAnimation.bIsRunning = true;
 
-    while (stAnimation.bIsRunning)
+    while (_stAnimation.bIsRunning)
     {
-        HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
         Animation_Update();
 
-        osDelay(stAnimation.u16RefreshRate);
+        osDelay(_stAnimation.u16UpdateRate);
     }
 }

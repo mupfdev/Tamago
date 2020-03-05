@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #define FRAME_SIZE             64     ///< Frame size in byte
@@ -35,6 +36,18 @@ typedef enum
 } AnimID;
 
 /**
+ * @enum  IconID
+ * @brief Icon IDs
+ */
+typedef enum
+{
+    ICON_POO = 0, ///< ID, Poo icon
+    ICON_SKULL,   ///< ID, Skull icon
+    ICON_SLEEP    ///< ID, Sleep icon
+
+} IconID;
+
+/**
  * @struct Animation
  * @brief  Animation
  */
@@ -45,7 +58,9 @@ typedef struct
 
 } Animation;
 
-int  Animation_Init(void);
-void Animation_Set(AnimID eID);
-void Animation_SetRefreshRate(uint16_t u16RefreshRate);
-void Animation_Update(void);
+int      Animation_Init(void);
+uint8_t* Animation_GetBufferAddr(void);
+void     Animation_ShowIcon(IconID eID, bool bShow);
+void     Animation_Set(AnimID eID);
+void     Animation_SetUpdateRate(uint16_t u16RefreshRate);
+void     Animation_Update(void);

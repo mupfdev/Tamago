@@ -49,4 +49,4 @@ void DMD_Latch(void);
 void DMD_LightRows(DMDRows eRows);
 void DMD_OE_RowsOff(void);
 void DMD_OE_RowsOn(void);
-void DMD_SetBuffer(unsigned char* pucBuffer);
+void DMD_SetBuffer(uint8_t* pucBuffer);

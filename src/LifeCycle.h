@@ -35,7 +35,6 @@ typedef enum
  */
 typedef struct
 {
-    uint32_t  u32AgeInSeconds; ///< Age in seconds
     uint16_t  u16CareMistages; ///< Number of care mistakes
     Evolution eEvolution;      ///< Current evolution
 

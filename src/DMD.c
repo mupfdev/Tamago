@@ -13,13 +13,15 @@
 #include "System.h"
 #include "cmsis_os.h"
 #include "stm32f1xx_hal.h"
-#include "stm32f1xx_hal_gpio.h"
 #include "stm32f1xx_hal_spi.h"
+#include "stm32f1xx_hal_tim.h"
 #include "task.h"
 
-static void DMDThread(void* pArg);
-
 extern SPI_HandleTypeDef hspi1;
+extern TIM_HandleTypeDef htim1;
+
+static void _DelayUS(uint16_t u16Delay);
+static void _DMDThread(void* pArg);
 
 /**
  * @struct DMDData
@@ -27,17 +29,17 @@ extern SPI_HandleTypeDef hspi1;
  */
 typedef struct
 {
-    bool           bIsRunning; ///< Running state
-    unsigned char* pucBuffer;  ///< DMD image buffer
-    TaskHandle_t   hDMDThread; ///< DMD thread handle
+    bool         bIsRunning; ///< Running state
+    uint8_t*     pu8Buffer;  ///< DMD image buffer
+    TaskHandle_t hDMDThread; ///< DMD thread handle
 
 } DMDData;
 
 /**
- * @var   stDMD
+ * @var   _stDMD
  * @brief DMD driver private data
  */
-static DMDData stDMD = { 0 };
+static DMDData _stDMD = { 0 };
 
 /**
  * @brief  Initialise DMD driver
@@ -60,12 +62,12 @@ int DMD_Init(void)
     HAL_GPIO_Init(DMD_GPIO_Port, &GPIO_InitStruct);
 
     nStatus = xTaskCreate(
-        DMDThread,
+        _DMDThread,
         "DMD",
         configMINIMAL_STACK_SIZE,
         NULL,
         osPriorityNormal,
-        &stDMD.hDMDThread);
+        &_stDMD.hDMDThread);
 
     return (pdPASS != nStatus) ? (-1) : (0);
 }
@@ -76,7 +78,7 @@ int DMD_Init(void)
 void DMD_Latch(void)
 {
     HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_SCLK_Pin, GPIO_PIN_SET);
-    System_DelayUS(1);
+    _DelayUS(1);
     HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_SCLK_Pin, GPIO_PIN_RESET);
 }
 
@@ -126,33 +128,44 @@ void DMD_OE_RowsOn(void)
 
 /**
  * @brief Set DMD image buffer
- * @param pucBuffer
+ * @param pu8Buffer
  *        Pointer to image buffer
  */
-void DMD_SetBuffer(unsigned char* pucBuffer)
+void DMD_SetBuffer(uint8_t* pu8Buffer)
 {
-    stDMD.pucBuffer = pucBuffer;
+    _stDMD.pu8Buffer = pu8Buffer;
+}
+
+/**
+ * @brief Delay program (blocking)
+ * @param u16Delay
+ *        Delay in microseconds
+ */
+static void _DelayUS(uint16_t u16Delay)
+{
+    __HAL_TIM_SET_COUNTER(&htim1, 0);
+    while (u16Delay > __HAL_TIM_GET_COUNTER(&htim1));
 }
 
 /**
  * @brief DMD thread
  * @param pArg: Unused
  */
-static void DMDThread(void* pArg)
+static void _DMDThread(void* pArg)
 {
     static uint8_t u8Scanline = 0;
 
-    stDMD.bIsRunning = true;
+    _stDMD.bIsRunning = true;
 
-    while (stDMD.bIsRunning)
+    while (_stDMD.bIsRunning)
     {
         uint16_t u16Offset = 4U * u8Scanline;
         for (uint8_t u8Idx = 0; u8Idx < 4U; u8Idx++)
         {
-            HAL_SPI_Transmit_IT(&hspi1, stDMD.pucBuffer + (u16Offset + u8Idx + 48), 1);
-            HAL_SPI_Transmit_IT(&hspi1, stDMD.pucBuffer + (u16Offset + u8Idx + 32), 1);
-            HAL_SPI_Transmit_IT(&hspi1, stDMD.pucBuffer + (u16Offset + u8Idx + 16), 1);
-            HAL_SPI_Transmit_IT(&hspi1, stDMD.pucBuffer + (u16Offset + u8Idx),      1);
+            HAL_SPI_Transmit_IT(&hspi1, _stDMD.pu8Buffer + (u16Offset + u8Idx + 48), 1);
+            HAL_SPI_Transmit_IT(&hspi1, _stDMD.pu8Buffer + (u16Offset + u8Idx + 32), 1);
+            HAL_SPI_Transmit_IT(&hspi1, _stDMD.pu8Buffer + (u16Offset + u8Idx + 16), 1);
+            HAL_SPI_Transmit_IT(&hspi1, _stDMD.pu8Buffer + (u16Offset + u8Idx),      1);
         }
 
         DMD_OE_RowsOff();
