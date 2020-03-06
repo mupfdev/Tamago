@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Beerware
 /**
  * @file  SPI.h
- * @brief SPI interface
+ * @brief SPI interface/abstraction layer
  */
 #pragma once
 

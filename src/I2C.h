@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Beerware
 /**
  * @file  I2C.h
- * @brief I²C interface
+ * @brief I²C interface/abstraction layer
  */
 #pragma once
 

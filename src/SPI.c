@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Beerware
 /**
  * @file      SPI.c
- * @brief     SPI interface
+ * @brief     SPI interface/abstraction layer
  * @author    Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
