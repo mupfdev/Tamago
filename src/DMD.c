@@ -10,14 +10,13 @@
 #include <stdint.h>
 #include "DMD.h"
 #include "FreeRTOS.h"
+#include "SPI.h"
 #include "System.h"
 #include "cmsis_os.h"
 #include "stm32f1xx_hal.h"
-#include "stm32f1xx_hal_spi.h"
 #include "stm32f1xx_hal_tim.h"
 #include "task.h"
 
-extern SPI_HandleTypeDef hspi1;
 extern TIM_HandleTypeDef htim1;
 
 static void _DelayUS(uint16_t u16Delay);
@@ -162,10 +161,10 @@ static void _DMDThread(void* pArg)
         uint16_t u16Offset = 4U * u8Scanline;
         for (uint8_t u8Idx = 0; u8Idx < 4U; u8Idx++)
         {
-            HAL_SPI_Transmit_IT(&hspi1, _stDMD.pu8Buffer + (u16Offset + u8Idx + 48), 1);
-            HAL_SPI_Transmit_IT(&hspi1, _stDMD.pu8Buffer + (u16Offset + u8Idx + 32), 1);
-            HAL_SPI_Transmit_IT(&hspi1, _stDMD.pu8Buffer + (u16Offset + u8Idx + 16), 1);
-            HAL_SPI_Transmit_IT(&hspi1, _stDMD.pu8Buffer + (u16Offset + u8Idx),      1);
+            SPI_Transmit(_stDMD.pu8Buffer + (u16Offset + u8Idx + 48), 1);
+            SPI_Transmit(_stDMD.pu8Buffer + (u16Offset + u8Idx + 32), 1);
+            SPI_Transmit(_stDMD.pu8Buffer + (u16Offset + u8Idx + 16), 1);
+            SPI_Transmit(_stDMD.pu8Buffer + (u16Offset + u8Idx),      1);
         }
 
         DMD_OE_RowsOff();
