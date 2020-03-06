@@ -27,10 +27,6 @@ for the STM32F103C8T6 aka [blue pill board](http://reblag.dk/stm32/).
 
 Far from finished; work in progress.
 
-## Schematic
-
-Todo.
-
 ## Installation
 
 1. Install [PlatformIO Core](http://docs.platformio.org/page/core.html)
