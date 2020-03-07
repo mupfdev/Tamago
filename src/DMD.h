@@ -1,35 +1,18 @@
 // SPDX-License-Identifier: Beerware
 /**
- * @file    DMD.h
- * @brief   Dot Matrix Display driver
- * @page    DMD Dot Matrix Display
- * @section DMDHowTo How to connect
- * @code{.unparsed}
- *
- *      +-----+
- *      |     |           OE   ---> PA2
- * OE   | . . |  A        A    ---> PA1
- * GND  | . . |  B        B    ---> PA0
- * GND  | . . |  NC       CLK  ---> PA5 (SPI1_SCK)
- * GND    . . |  CLK      SCLK ---> PA3
- * GND    . . |  SCLK     R    ---> PA8 (SPI1_MOSI)
- * GND  | . . |  R
- * GND  | . . |  NC
- * GND  | . . |  NC
- *      |     |
- *      +-----+
- *
- * @endcode
+ * @file  DMD.h
+ * @brief Dot Matrix Display driver
  */
 #pragma once
 
 #include <stdint.h>
+#include "MCAL.h"
 
-#define DMD_OE_Pin    GPIO_PIN_2 ///< DMD OE pin
-#define DMD_SCLK_Pin  GPIO_PIN_3 ///< DMD SCLK pin
-#define DMD_A_Pin     GPIO_PIN_1 ///< DMD A pin
-#define DMD_B_Pin     GPIO_PIN_0 ///< DMD B pin
-#define DMD_GPIO_Port GPIOA      ///< DMD GPIO port
+#define DMD_OE_Pin    GPIO_PIN_2  ///< DMD OE pin
+#define DMD_SCLK_Pin  GPIO_PIN_3  ///< DMD SCLK pin
+#define DMD_A_Pin     GPIO_PIN_1  ///< DMD A pin
+#define DMD_B_Pin     GPIO_PIN_0  ///< DMD B pin
+#define DMD_GPIO_Port GPIO_PORT_A ///< DMD GPIO port
 
 /**
  * @enum  DMDRows

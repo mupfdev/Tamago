@@ -10,16 +10,11 @@
 #include <stdint.h>
 #include "DMD.h"
 #include "FreeRTOS.h"
-#include "SPI.h"
+#include "MCAL.h"
 #include "System.h"
 #include "cmsis_os.h"
-#include "stm32f1xx_hal.h"
-#include "stm32f1xx_hal_tim.h"
 #include "task.h"
 
-extern TIM_HandleTypeDef htim1;
-
-static void _DelayUS(uint16_t u16Delay);
 static void _DMDThread(void* pArg);
 
 /**
@@ -48,17 +43,7 @@ static DMDData _stDMD = { 0 };
  */
 int DMD_Init(void)
 {
-    BaseType_t       nStatus         = pdPASS;
-    GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-
-    GPIO_InitStruct.Pin   = DMD_OE_Pin | DMD_SCLK_Pin | DMD_A_Pin | DMD_B_Pin;
-    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull  = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-
-    HAL_GPIO_Init(DMD_GPIO_Port, &GPIO_InitStruct);
+    BaseType_t nStatus = pdPASS;
 
     nStatus = xTaskCreate(
         _DMDThread,
@@ -76,9 +61,9 @@ int DMD_Init(void)
  */
 void DMD_Latch(void)
 {
-    HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_SCLK_Pin, GPIO_PIN_SET);
-    _DelayUS(1);
-    HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_SCLK_Pin, GPIO_PIN_RESET);
+    GPIO_RaiseHigh(DMD_GPIO_Port, DMD_SCLK_Pin);
+    MCAL_DelayUS(1);
+    GPIO_PullDown(DMD_GPIO_Port, DMD_SCLK_Pin);
 }
 
 /**
@@ -91,20 +76,20 @@ void DMD_LightRows(DMDRows eRows)
     switch (eRows)
     {
         case DMD_ROWS_1_5_9_13:
-            HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_A_Pin, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_B_Pin, GPIO_PIN_RESET);
+            GPIO_PullDown(DMD_GPIO_Port, DMD_A_Pin);
+            GPIO_PullDown(DMD_GPIO_Port, DMD_B_Pin);
             break;
         case DMD_ROWS_2_6_10_14:
-            HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_A_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_B_Pin, GPIO_PIN_RESET);
+            GPIO_RaiseHigh(DMD_GPIO_Port, DMD_A_Pin);
+            GPIO_PullDown(DMD_GPIO_Port,  DMD_B_Pin);
             break;
         case DMD_ROWS_3_7_11_15:
-            HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_A_Pin, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_B_Pin, GPIO_PIN_SET);
+            GPIO_PullDown(DMD_GPIO_Port,  DMD_A_Pin);
+            GPIO_RaiseHigh(DMD_GPIO_Port, DMD_B_Pin);
             break;
         case DMD_ROWS_4_8_12_16:
-            HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_A_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_B_Pin, GPIO_PIN_SET);
+            GPIO_RaiseHigh(DMD_GPIO_Port, DMD_A_Pin);
+            GPIO_RaiseHigh(DMD_GPIO_Port, DMD_B_Pin);
             break;
     }
 }
@@ -114,7 +99,7 @@ void DMD_LightRows(DMDRows eRows)
  */
 void DMD_OE_RowsOff(void)
 {
-    HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_OE_Pin, GPIO_PIN_RESET);
+    GPIO_PullDown(DMD_GPIO_Port, DMD_OE_Pin);
 }
 
 /**
@@ -122,7 +107,7 @@ void DMD_OE_RowsOff(void)
  */
 void DMD_OE_RowsOn(void)
 {
-    HAL_GPIO_WritePin(DMD_GPIO_Port, DMD_OE_Pin, GPIO_PIN_SET);
+    GPIO_RaiseHigh(DMD_GPIO_Port, DMD_OE_Pin);
 }
 
 /**
@@ -133,17 +118,6 @@ void DMD_OE_RowsOn(void)
 void DMD_SetBuffer(uint8_t* pu8Buffer)
 {
     _stDMD.pu8Buffer = pu8Buffer;
-}
-
-/**
- * @brief Delay program (blocking)
- * @param u16Delay
- *        Delay in microseconds
- */
-static void _DelayUS(uint16_t u16Delay)
-{
-    __HAL_TIM_SET_COUNTER(&htim1, 0);
-    while (u16Delay > __HAL_TIM_GET_COUNTER(&htim1));
 }
 
 /**
