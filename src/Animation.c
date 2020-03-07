@@ -12,7 +12,6 @@
 #include "FreeRTOS.h"
 #include "cmsis_os.h"
 #include "task.h"
-#include "stm32f1xx_hal.h"
 
 static void _AddIconToBuffer(const IconID eID, uint8_t u8IconOffset);
 static void _AnimationThread(void* pArg);
