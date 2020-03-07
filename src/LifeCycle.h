@@ -30,14 +30,30 @@ typedef enum
 } Evolution;
 
 /**
+ * @brief Status flags
+ */
+typedef enum
+{
+    HAS_POOPED = 0,
+    IS_SICK,
+    IS_SLEEPING,
+
+} StatusFlag;
+
+/**
  * @struct Stats
  * @brief  Pet statistics
  */
 typedef struct
 {
+    uint16_t  u16Flags;        ///< Status flags (bit-field)
     uint16_t  u16CareMistages; ///< Number of care mistakes
     Evolution eEvolution;      ///< Current evolution
 
 } Stats;
 
-int LifeCycle_Init(void);
+int    LifeCycle_Init(void);
+Stats* LifeCycle_GetStats(void);
+bool   LifeCycle_IsFlagSet(StatusFlag eFlag);
+void   LifeCycle_ClearFlat(StatusFlag eFlag);
+void   LifeCycle_SetFlag(StatusFlag eFlag);
