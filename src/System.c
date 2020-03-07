@@ -29,10 +29,32 @@
  *
  * @li PA8 ---> TIM1_CH1
  *
- * @subsection GPIO_GENERIC Generic
+ * @subsection GPIO_OUTPUT Output
  *
+ * @li PA0  ---> DMD OE pin
+ * @li PA1  ---> DMD SCLK pin
+ * @li PA2  ---> DMD A pin
+ * @li PA3  ---> DMD B pin
  * @li PC13 ---> LED
  *
+ * @page    DMD Dot Matrix Display
+ * @section DMDHowTo How to connect
+ * @code{.unparsed}
+ *
+ *      +-----+
+ *      |     |           OE   ---> PA2
+ * OE   | . . |  A        A    ---> PA1
+ * GND  | . . |  B        B    ---> PA0
+ * GND  | . . |  NC       CLK  ---> PA5 (SPI1_SCK)
+ * GND    . . |  CLK      SCLK ---> PA3
+ * GND    . . |  SCLK     R    ---> PA8 (SPI1_MOSI)
+ * GND  | . . |  R
+ * GND  | . . |  NC
+ * GND  | . . |  NC
+ *      |     |
+ *      +-----+
+ *
+ * @endcode
  */
 
 #include "stm32f1xx_hal.h"
@@ -165,14 +187,23 @@ static void System_GPIO_Init(void)
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
-    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+    // LED
+    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 
     GPIO_InitStruct.Pin   = LED_Pin;
     GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
+    GPIO_InitStruct.Pull  = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
     HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
+
+    // Dot Matrix Display
+    GPIO_InitStruct.Pin   = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
 /**
