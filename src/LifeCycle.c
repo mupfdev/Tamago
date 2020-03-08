@@ -9,7 +9,6 @@
 #include <stdbool.h>
 #include "FreeRTOS.h"
 #include "LifeCycle.h"
-#include "System.h"
 #include "cmsis_os.h"
 #include "task.h"
 

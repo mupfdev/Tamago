@@ -66,11 +66,11 @@ SPI_HandleTypeDef hspi1; ///< SPI 1 handle
 TIM_HandleTypeDef htim1; ///< Timer 1 handle
 TIM_HandleTypeDef htim4; ///< Timer 4 handle (Sys-Tick)
 
-static void         System_GPIO_Init(void);
-static int System_TIM1_Init(void);
-static int System_ADC1_Init(void);
-static int System_I2C2_Init(void);
-static int System_SPI1_Init(void);
+static void System_GPIO_Init(void);
+static int  System_TIM1_Init(void);
+static int  System_ADC1_Init(void);
+static int  System_I2C2_Init(void);
+static int  System_SPI1_Init(void);
 
 /**
  * @brief  Period elapsed callback in non blocking mode
