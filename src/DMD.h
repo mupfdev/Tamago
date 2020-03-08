@@ -8,11 +8,21 @@
 #include <stdint.h>
 #include "MCAL.h"
 
-#define DMD_OE_Pin    GPIO_PIN_2  ///< DMD OE pin
-#define DMD_SCLK_Pin  GPIO_PIN_3  ///< DMD SCLK pin
-#define DMD_A_Pin     GPIO_PIN_1  ///< DMD A pin
-#define DMD_B_Pin     GPIO_PIN_0  ///< DMD B pin
-#define DMD_GPIO_Port GPIO_PORT_A ///< DMD GPIO port
+#ifndef DMD_OE_Pin
+    #define DMD_OE_Pin    GPIO_PIN_2  ///< DMD OE pin
+#endif
+#ifndef DMD_SCLK_Pin
+    #define DMD_SCLK_Pin  GPIO_PIN_3  ///< DMD SCLK pin
+#endif
+#ifndef DMD_A_Pin
+    #define DMD_A_Pin     GPIO_PIN_1  ///< DMD A pin
+#endif
+#ifndef DMD_B_Pin
+    #define DMD_B_Pin     GPIO_PIN_0  ///< DMD B pin
+#endif
+#ifndef DMD_GPIO_Port
+    #define DMD_GPIO_Port GPIO_PORT_A ///< DMD GPIO port
+#endif
 
 /**
  * @enum  DMDRows
