@@ -19,18 +19,7 @@ extern I2C_HandleTypeDef hi2c2;
 extern SPI_HandleTypeDef hspi1;
 extern TIM_HandleTypeDef htim1;
 
-static GPIO_TypeDef* _ConvertGPIOPort(GPIOPort ePort);
-
-/**
- * @brief Microsecond delay (blocking)
- * @param u16Delay
- *        Delay in microseconds
- */
-void MCAL_DelayUS(uint16_t u16Delay)
-{
-    __HAL_TIM_SET_COUNTER(&htim1, 0);
-    while (u16Delay > __HAL_TIM_GET_COUNTER(&htim1));
-}
+static GPIO_TypeDef* _MCAL_ConvertGPIOPort(GPIOPort ePort);
 
 /**
  * @brief Pull output pin(s) low
@@ -41,7 +30,7 @@ void MCAL_DelayUS(uint16_t u16Delay)
  */
 void GPIO_PullDown(GPIOPort ePort, uint16_t u16PinMask)
 {
-    GPIO_TypeDef* phPort = _ConvertGPIOPort(ePort);
+    GPIO_TypeDef* phPort = _MCAL_ConvertGPIOPort(ePort);
     HAL_GPIO_WritePin(phPort, u16PinMask, GPIO_PIN_RESET);
 }
 
@@ -54,8 +43,21 @@ void GPIO_PullDown(GPIOPort ePort, uint16_t u16PinMask)
  */
 void GPIO_RaiseHigh(GPIOPort ePort, uint16_t u16PinMask)
 {
-    GPIO_TypeDef* phPort = _ConvertGPIOPort(ePort);
+    GPIO_TypeDef* phPort = _MCAL_ConvertGPIOPort(ePort);
     HAL_GPIO_WritePin(phPort, u16PinMask, GPIO_PIN_SET);
+}
+
+/**
+ * @bref  Toggle output pin(s) between high and low
+ * @param ePort
+ *        GPIO port
+ * @param u16PinMask
+ *        Pin mask
+ */
+void GPIO_Toggle(GPIOPort ePort, uint16_t u16PinMask)
+{
+    GPIO_TypeDef* phPort = _MCAL_ConvertGPIOPort(ePort);
+    HAL_GPIO_TogglePin(phPort, u16PinMask);
 }
 
 /**
@@ -68,9 +70,11 @@ void GPIO_RaiseHigh(GPIOPort ePort, uint16_t u16PinMask)
  *         Pointer to data buffer
  * @param  u16Size
  *         Amount of data to be sent
- * @return System status code
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
  */
-SystemStatus I2C_Receive(uint16_t u16DevAddress, uint16_t u16MemAddress, uint8_t* pu8RxBuffer, uint16_t u16Size)
+int I2C_Receive(uint16_t u16DevAddress, uint16_t u16MemAddress, uint8_t* pu8RxBuffer, uint16_t u16Size)
 {
     if (HAL_OK != HAL_I2C_Mem_Read_IT(
             &hi2c2,
@@ -80,10 +84,10 @@ SystemStatus I2C_Receive(uint16_t u16DevAddress, uint16_t u16MemAddress, uint8_t
             pu8RxBuffer,
             u16Size))
     {
-        return SYSTEM_I2C_ERROR;
+        return -1;
     }
 
-    return SYSTEM_OK;
+    return 0;
 }
 
 /**
@@ -96,9 +100,11 @@ SystemStatus I2C_Receive(uint16_t u16DevAddress, uint16_t u16MemAddress, uint8_t
  *         Pointer to data buffer
  * @param  u16Size
  *         Amount of data to be sent
- * @return System status code
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
  */
-SystemStatus I2C_Transmit(uint16_t u16DevAddress, uint16_t u16MemAddress, uint8_t* pu8TxBuffer, uint16_t u16Size)
+int I2C_Transmit(uint16_t u16DevAddress, uint16_t u16MemAddress, uint8_t* pu8TxBuffer, uint16_t u16Size)
 {
     if (HAL_OK != HAL_I2C_Mem_Write_IT(
             &hi2c2,
@@ -108,10 +114,21 @@ SystemStatus I2C_Transmit(uint16_t u16DevAddress, uint16_t u16MemAddress, uint8_
             pu8TxBuffer,
             u16Size))
     {
-        return SYSTEM_I2C_ERROR;
+        return -1;
     }
 
-    return SYSTEM_OK;
+    return 0;
+}
+
+/**
+ * @brief Microsecond delay (blocking)
+ * @param u16DelayInUs
+ *        Delay in microseconds
+ */
+void MCAL_Sleep(uint16_t u16DelayInUs)
+{
+    __HAL_TIM_SET_COUNTER(&htim1, 0);
+    while (u16DelayInUs > __HAL_TIM_GET_COUNTER(&htim1));
 }
 
 /**
@@ -120,16 +137,18 @@ SystemStatus I2C_Transmit(uint16_t u16DevAddress, uint16_t u16MemAddress, uint8_
  *         Pointer to data buffer
  * @param  u16Size
  *         Amount of data to be sent
- * @return System status code
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
  */
-SystemStatus SPI_Transmit(uint8_t* pu8TxData, uint16_t u16Size)
+int SPI_Transmit(uint8_t* pu8TxData, uint16_t u16Size)
 {
     if (HAL_OK != HAL_SPI_Transmit_IT(&hspi1, pu8TxData, u16Size))
     {
-        return SYSTEM_SPI_ERROR;
+        return -1;
     }
 
-    return SYSTEM_OK;
+    return 0;
 }
 
 /**
@@ -138,16 +157,18 @@ SystemStatus SPI_Transmit(uint8_t* pu8TxData, uint16_t u16Size)
  *         Pointer to data buffer
  * @param  u16Size
  *         Amount of data to be sent
- * @return System status code
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
  */
-SystemStatus SPI_Receive(uint8_t* pu8RxData, uint16_t u16Size)
+int SPI_Receive(uint8_t* pu8RxData, uint16_t u16Size)
 {
     if (HAL_OK != HAL_SPI_Receive_IT(&hspi1, pu8RxData, u16Size))
     {
-        return SYSTEM_SPI_ERROR;
+        return -1;
     }
 
-    return SYSTEM_OK;
+    return 0;
 }
 
 /**
@@ -158,19 +179,27 @@ SystemStatus SPI_Receive(uint8_t* pu8RxData, uint16_t u16Size)
  *         Pointer to reception data buffer
  * @param  u16Size
  *         Amount of data to be sent and received
- * @return System status code
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
  */
-SystemStatus SPI_TransmitReceive(uint8_t* pu8TxData, uint8_t* pu8RxData, uint16_t u16Size)
+int SPI_TransmitReceive(uint8_t* pu8TxData, uint8_t* pu8RxData, uint16_t u16Size)
 {
     if (HAL_OK != HAL_SPI_TransmitReceive_IT(&hspi1, pu8TxData, pu8RxData, u16Size))
     {
-        return SYSTEM_SPI_ERROR;
+        return -1;
     }
 
-    return SYSTEM_OK;
+    return 0;
 }
 
-static GPIO_TypeDef* _ConvertGPIOPort(GPIOPort ePort)
+/**
+ * @brief  Convert GPIOPort to STM32_HAL's GPIO_TypeDef
+ * @param  ePort
+ *         GPIO port
+ * @return Pointer to respective GPIO_TypeDef
+ */
+static GPIO_TypeDef* _MCAL_ConvertGPIOPort(GPIOPort ePort)
 {
     GPIO_TypeDef* phPort = GPIOA;
 

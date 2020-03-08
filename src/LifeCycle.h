@@ -37,6 +37,7 @@ typedef enum
     HAS_POOPED = 0,
     IS_SICK,
     IS_SLEEPING,
+    IS_TIRED
 
 } StatusFlag;
 

@@ -62,7 +62,7 @@ int DMD_Init(void)
 void DMD_Latch(void)
 {
     GPIO_RaiseHigh(DMD_GPIO_Port, DMD_SCLK_Pin);
-    MCAL_DelayUS(1);
+    MCAL_Sleep(1);
     GPIO_PullDown(DMD_GPIO_Port, DMD_SCLK_Pin);
 }
 
