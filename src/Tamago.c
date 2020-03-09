@@ -7,6 +7,7 @@
  */
 
 #include "Animation.h"
+#include "Clock.h"
 #include "DMD.h"
 #include "FreeRTOS.h"
 #include "LifeCycle.h"
@@ -37,6 +38,12 @@ int Tamago_Init(void)
     }
 
     nError = Animation_Init();
+    if (0 != nError)
+    {
+        return -1;
+    }
+
+    nError = Clock_Init();
     if (0 != nError)
     {
         return -1;
@@ -77,11 +84,12 @@ static void _TamagoThread(void* pArg)
     Stats* pstStats = LifeCycle_GetStats();
 
     DMD_SetBuffer(Animation_GetBufferAddr());
+    //DMD_SetBuffer(Clock_GetBufferAddr());
 
     while (1)
     {
         _SetAnimationByStats(pstStats);
-        osDelay(5);
+        osDelay(10);
     }
 }
 
