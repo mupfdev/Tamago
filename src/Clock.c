@@ -82,23 +82,23 @@ uint8_t* Clock_GetBufferAddr(void)
  */
 void Clock_Update(void)
 {
-    uint8_t u8Idx;
+    int8_t  s8Idx;
     uint8_t u8Temp;
     uint8_t u8Offset;
     uint8_t u8Digit[4]   = { 0 };
 
     // Extract digits
     u8Temp = _stClock.u8Minutes;
-    for (u8Idx = 3; u8Idx >= 2; u8Idx--)
+    for (s8Idx = 3; s8Idx >= 2; s8Idx--)
     {
-        u8Digit[u8Idx]  = u8Temp % 10;
+        u8Digit[s8Idx]  = u8Temp % 10;
         u8Temp         /= 10;
     }
 
     u8Temp = _stClock.u8Hours;
-    for (u8Idx = 1; u8Idx != 255; u8Idx--)
+    for (s8Idx = 1; s8Idx >= 0; s8Idx--)
     {
-        u8Digit[u8Idx]  = u8Temp % 10;
+        u8Digit[s8Idx]  = u8Temp % 10;
         u8Temp         /= 10;
     }
 
