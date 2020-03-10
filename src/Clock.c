@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include "Clock.h"
 #include "FreeRTOS.h"
+#include "MCAL.h"
 #include "cmsis_os.h"
 #include "task.h"
 
@@ -23,6 +24,7 @@ typedef struct
 {
     uint8_t      u8Hours;       ///< Hours (0-23)
     uint8_t      u8Minutes;     ///< Minutes (0-59)
+    uint8_t      u8Seconds;     ///< Seconds (0-59)
     bool         bIsRunning;    ///< Running state
     uint8_t      au8Buffer[64]; ///< Buffer for current clock-face
     TaskHandle_t hClockThread;  ///< Clock thread handle
@@ -85,7 +87,7 @@ void Clock_Update(void)
     int8_t  s8Idx;
     uint8_t u8Temp;
     uint8_t u8Offset;
-    uint8_t u8Digit[4]   = { 0 };
+    uint8_t u8Digit[4] = { 0 };
 
     // Extract digits
     u8Temp = _stClock.u8Minutes;
@@ -119,29 +121,6 @@ void Clock_Update(void)
 }
 
 /**
- * @brief Set current time
- * @param u8Hours
- *        Hours (0-23)
- * @param u8Minutes
- *        Minutes (0-59)
- */
-void Clock_SetTime(uint8_t u8Hours, uint8_t u8Minutes)
-{
-    if (u8Hours > 23)
-    {
-        u8Hours = 0;
-    }
-
-    if (u8Minutes > 59)
-    {
-        u8Minutes = 0;
-    }
-
-    _stClock.u8Hours   = u8Hours;
-    _stClock.u8Minutes = u8Minutes;
-}
-
-/**
  * @brief Clock thread
  * @param pArg: Unused
  */
@@ -151,6 +130,7 @@ static void _ClockThread(void* pArg)
 
     while (_stClock.bIsRunning)
     {
+        RTC_GetTime(&_stClock.u8Hours, &_stClock.u8Minutes, &_stClock.u8Seconds);
         Clock_Update();
         osDelay(10);
     }

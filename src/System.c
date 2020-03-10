@@ -63,6 +63,7 @@
 ADC_HandleTypeDef hadc1; ///< ADC 1 handle
 I2C_HandleTypeDef hi2c2; ///< I²C 2 handle
 SPI_HandleTypeDef hspi1; ///< SPI 1 handle
+RTC_HandleTypeDef hrtc;  ///< RTC handle
 TIM_HandleTypeDef htim1; ///< Timer 1 handle
 TIM_HandleTypeDef htim4; ///< Timer 4 handle (Sys-Tick)
 
@@ -71,6 +72,7 @@ static int  System_TIM1_Init(void);
 static int  System_ADC1_Init(void);
 static int  System_I2C2_Init(void);
 static int  System_SPI1_Init(void);
+static int  System_RTC_Init(void);
 
 /**
  * @brief  Period elapsed callback in non blocking mode
@@ -91,11 +93,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 /**
  * @brief  System Initialisation Function
- * @return System status code
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
  */
 int System_Init(void)
 {
-    int             nStatus           = 0;
+    int                      nStatus           = 0;
     RCC_OscInitTypeDef       RCC_OscInitStruct = { 0 };
     RCC_ClkInitTypeDef       RCC_ClkInitStruct = { 0 };
     RCC_PeriphCLKInitTypeDef PeriphClkInit     = { 0 };
@@ -107,10 +111,11 @@ int System_Init(void)
 
     /** Initialises the CPU, AHB and APB busses clocks
      */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState       = RCC_HSE_ON;
     RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
     RCC_OscInitStruct.HSIState       = RCC_HSI_ON;
+    RCC_OscInitStruct.LSIState       = RCC_LSI_ON;
     RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
     RCC_OscInitStruct.PLL.PLLMUL     = RCC_PLL_MUL9;
@@ -136,7 +141,8 @@ int System_Init(void)
         return -1;
     }
 
-    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_ADC;
+    PeriphClkInit.RTCClockSelection    = RCC_RTCCLKSOURCE_LSI;
     PeriphClkInit.AdcClockSelection    = RCC_ADCPCLK2_DIV6;
 
     if (HAL_OK != HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit))
@@ -171,6 +177,13 @@ int System_Init(void)
     }
 
     nStatus = System_SPI1_Init();
+    if (0 != nStatus)
+    {
+        return nStatus;
+    }
+
+    System_RTC_Init();
+
     return nStatus;
 }
 
@@ -208,7 +221,9 @@ static void System_GPIO_Init(void)
 
 /**
  * @brief  Timer 1 Initialisation Function
- * @return System status code
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
  */
 static int System_TIM1_Init(void)
 {
@@ -285,7 +300,9 @@ static int System_TIM1_Init(void)
 
 /**
  * @brief  ADC 1 Initialisation Function
- * @return System status code
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
  */
 static int System_ADC1_Init(void)
 {
@@ -346,7 +363,9 @@ static int System_ADC1_Init(void)
 
 /**
  * @brief  I²C 2 Initialisation Function
- * @return System status code
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
  */
 static int System_I2C2_Init(void)
 {
@@ -370,7 +389,9 @@ static int System_I2C2_Init(void)
 
 /**
  * @brief  SPI 1 Initialisation Function
- * @return System status code
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
  */
 static int System_SPI1_Init(void)
 {
@@ -389,6 +410,50 @@ static int System_SPI1_Init(void)
     hspi1.Init.CRCPolynomial     = 10;
 
     if (HAL_OK != HAL_SPI_Init(&hspi1))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief  RTC Initialisation Function
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
+ */
+static int System_RTC_Init(void)
+{
+    RTC_TimeTypeDef sTime        = { 0 };
+    RTC_DateTypeDef DateToUpdate = { 0 };
+
+    // Initialise RTC Only
+    hrtc.Instance          = RTC;
+    hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
+    hrtc.Init.OutPut       = RTC_OUTPUTSOURCE_NONE;
+
+    if (HAL_OK != HAL_RTC_Init(&hrtc))
+    {
+        return -1;
+    }
+
+    // Initialise RTC and set the Time and Date
+    sTime.Hours   =  6;
+    sTime.Minutes = 30;
+    sTime.Seconds =  0;
+
+    if (HAL_OK != HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN))
+    {
+        return -1;
+    }
+
+    DateToUpdate.WeekDay = RTC_WEEKDAY_SATURDAY;
+    DateToUpdate.Month   = RTC_MONTH_NOVEMBER;
+    DateToUpdate.Date    = 23;
+    DateToUpdate.Year    = 96;
+
+    if (HAL_OK != HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN))
     {
         return -1;
     }
@@ -634,6 +699,44 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
 }
 
 /**
+ * @brief RTC MSP Initialisation
+ * @param hrtc: RTC handle pointer
+ */
+void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
+{
+    if (RTC == hrtc->Instance)
+    {
+        HAL_PWR_EnableBkUpAccess();
+
+        // Enable BKP CLK enable for backup registers
+        __HAL_RCC_BKP_CLK_ENABLE();
+
+        // Peripheral clock enable
+        __HAL_RCC_RTC_ENABLE();
+
+        // RTC interrupt Init
+        HAL_NVIC_SetPriority(RTC_IRQn, 5, 0);
+        HAL_NVIC_EnableIRQ(RTC_IRQn);
+    }
+}
+
+/**
+ * @brief RTC MSP De-Initialisation
+ * @param hrtc: RTC handle pointer
+ */
+void HAL_RTC_MspDeInit(RTC_HandleTypeDef* hrtc)
+{
+    if (RTC == hrtc->Instance)
+    {
+        // Peripheral clock disable
+        __HAL_RCC_RTC_DISABLE();
+
+        // RTC interrupt DeInit
+        HAL_NVIC_DisableIRQ(RTC_IRQn);
+    }
+}
+
+/**
  * @brief  This function configures the TIM4 as a time base source.
  *         The time source is configured to have 1ms time base with a
  *         dedicated Tick interrupt priority.
@@ -806,4 +909,12 @@ void I2C2_ER_IRQHandler(void)
 void SPI1_IRQHandler(void)
 {
     HAL_SPI_IRQHandler(&hspi1);
+}
+
+/**
+ * @brief This function handles RTC global interrupt.
+ */
+void RTC_IRQHandler(void)
+{
+    HAL_RTCEx_RTCIRQHandler(&hrtc);
 }

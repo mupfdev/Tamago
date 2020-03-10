@@ -12,10 +12,12 @@
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal_i2c.h"
 #include "stm32f1xx_hal_spi.h"
+#include "stm32f1xx_hal_rtc.h"
 #include "stm32f1xx_hal_tim.h"
 
 extern I2C_HandleTypeDef hi2c2;
 extern SPI_HandleTypeDef hspi1;
+extern RTC_HandleTypeDef hrtc;
 extern TIM_HandleTypeDef htim1;
 
 static GPIO_TypeDef* _MCAL_ConvertGPIOPort(GPIOPort ePort);
@@ -128,6 +130,34 @@ void MCAL_Sleep(uint16_t u16DelayInUs)
 {
     __HAL_TIM_SET_COUNTER(&htim1, 0);
     while (u16DelayInUs > __HAL_TIM_GET_COUNTER(&htim1));
+}
+
+/**
+ * @brief  Get current time from RTC
+ * @param  pu8Hours
+ *         Pointer to hours
+ * @param  pu8Minutes
+ *         Pointer to minutes
+ * @param  pu8Seconds
+ *         Pointer to seconds
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
+ */
+int RTC_GetTime(uint8_t* pu8Hours, uint8_t* pu8Minutes, uint8_t* pu8Seconds)
+{
+    RTC_TimeTypeDef stTime = { 0 };
+
+    if (HAL_OK != HAL_RTC_GetTime(&hrtc, &stTime, RTC_FORMAT_BIN))
+    {
+        return -1;
+    }
+
+    *pu8Hours   = stTime.Hours;
+    *pu8Minutes = stTime.Minutes;
+    *pu8Seconds = stTime.Seconds;
+
+    return 0;
 }
 
 /**

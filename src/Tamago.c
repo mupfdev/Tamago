@@ -83,8 +83,8 @@ static void _TamagoThread(void* pArg)
 {
     Stats* pstStats = LifeCycle_GetStats();
 
-    DMD_SetBuffer(Animation_GetBufferAddr());
-    //DMD_SetBuffer(Clock_GetBufferAddr());
+    //DMD_SetBuffer(Animation_GetBufferAddr());
+    DMD_SetBuffer(Clock_GetBufferAddr());
 
     while (1)
     {
