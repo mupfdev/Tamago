@@ -161,6 +161,34 @@ int RTC_GetTime(uint8_t* pu8Hours, uint8_t* pu8Minutes, uint8_t* pu8Seconds)
 }
 
 /**
+ * @brief  Set current RTC time
+ * @param  u8Hours
+ *         Hours
+ * @param  u8Minutes
+ *         Minutes
+ * @param  u8Seconds
+ *         Seconds
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
+ */
+int RTC_SetTime(uint8_t u8Hours, uint8_t u8Minutes, uint8_t u8Seconds)
+{
+    RTC_TimeTypeDef stTime = { 0 };
+
+    stTime.Hours   = u8Hours;
+    stTime.Minutes = u8Minutes;
+    stTime.Seconds = u8Seconds;
+
+    if (HAL_OK != HAL_RTC_SetTime(&hrtc, &stTime, RTC_FORMAT_BIN))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+/**
  * @brief  Transmit an amount via SPI
  * @param  pu8TxData
  *         Pointer to data buffer
