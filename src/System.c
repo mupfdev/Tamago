@@ -35,6 +35,7 @@
  * @li PA1  ---> DMD SCLK pin
  * @li PA2  ---> DMD A pin
  * @li PA3  ---> DMD B pin
+ * @li PB3  ---> RCWL-0516 OUT pin
  * @li PC13 ---> LED
  *
  * @page    DMD Dot Matrix Display
@@ -115,7 +116,6 @@ int System_Init(void)
     RCC_OscInitStruct.HSEState       = RCC_HSE_ON;
     RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
     RCC_OscInitStruct.HSIState       = RCC_HSI_ON;
-    RCC_OscInitStruct.LSIState       = RCC_LSI_ON;
     RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
     RCC_OscInitStruct.PLL.PLLMUL     = RCC_PLL_MUL9;
@@ -142,7 +142,7 @@ int System_Init(void)
     }
 
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_ADC;
-    PeriphClkInit.RTCClockSelection    = RCC_RTCCLKSOURCE_LSI;
+    PeriphClkInit.RTCClockSelection    = RCC_RTCCLKSOURCE_LSE;
     PeriphClkInit.AdcClockSelection    = RCC_ADCPCLK2_DIV6;
 
     if (HAL_OK != HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit))
@@ -209,6 +209,14 @@ static void System_GPIO_Init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
     HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
+
+    // RCWL-0516
+    GPIO_InitStruct.Pin   = GPIO_PIN_3;
+    GPIO_InitStruct.Mode  = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     // Dot Matrix Display
     GPIO_InitStruct.Pin   = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3;
