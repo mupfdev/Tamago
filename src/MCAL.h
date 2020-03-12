@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 #include "stm32f1xx_hal.h"
 
@@ -22,6 +23,7 @@ typedef enum
 
 } GPIOPort;
 
+bool GPIO_IsSet(GPIOPort ePort, uint16_t u16PinMask);
 void GPIO_PullDown(GPIOPort ePort, uint16_t u16PinMask);
 void GPIO_RaiseHigh(GPIOPort ePort, uint16_t u16PinMask);
 void GPIO_Toggle(GPIOPort ePort, uint16_t u16PinMask);
