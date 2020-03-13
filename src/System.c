@@ -35,7 +35,6 @@
  * @li PA1  ---> DMD SCLK pin
  * @li PA2  ---> DMD A pin
  * @li PA3  ---> DMD B pin
- * @li PB3  ---> RCWL-0516 OUT pin
  * @li PC13 ---> LED
  *
  * @page    DMD Dot Matrix Display
@@ -209,14 +208,6 @@ static void System_GPIO_Init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
     HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
-
-    // RCWL-0516
-    GPIO_InitStruct.Pin   = GPIO_PIN_3;
-    GPIO_InitStruct.Mode  = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     // Dot Matrix Display
     GPIO_InitStruct.Pin   = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3;
