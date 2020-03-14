@@ -22,10 +22,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "M24FC256.h"
-
-extern int  I2C_Receive(uint16_t u16DevAddress, uint16_t u16MemAddress, uint8_t* pu8RxBuffer, uint16_t u16Size);
-extern int  I2C_Transmit(uint16_t u16DevAddress, uint16_t u16MemAddress, uint8_t* pu8TxBuffer, uint16_t u16Size);
-extern void I2C_WaitUntilReady(uint16_t u16DevAddress);
+#include "MCAL.h"
 
 /**
  * @brief   Read data from 24FC256 EEPROM
