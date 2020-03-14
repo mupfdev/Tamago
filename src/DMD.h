@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Beerware
 /**
- * @file  DMD.h
- * @brief Dot Matrix Display driver
+ * @file    DMD.h
+ * @ingroup DMD
+ * @brief   Dot Matrix Display driver
  */
 #pragma once
 

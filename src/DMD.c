@@ -2,6 +2,8 @@
 /**
  * @file      DMD.c
  * @brief     Dot Matrix Display driver
+ * @ingroup   DMD
+ * @defgroup  DMD Dot Matrix Display
  * @author    Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
