@@ -29,6 +29,7 @@ void GPIO_RaiseHigh(GPIOPort ePort, uint16_t u16PinMask);
 void GPIO_Toggle(GPIOPort ePort, uint16_t u16PinMask);
 int  I2C_Receive(uint16_t u16DevAddress, uint16_t u16MemAddress, uint8_t* pu8RxBuffer, uint16_t u16Size);
 int  I2C_Transmit(uint16_t u16DevAddress, uint16_t u16MemAddress, uint8_t* pu8TxBuffer, uint16_t u16Size);
+void I2C_WaitUntilReady(uint16_t u16DevAddress);
 void MCAL_Sleep(uint16_t u16DelayInUs);
 int  RTC_GetTime(uint8_t* pu8Hours, uint8_t* pu8Minutes, uint8_t* pu8Seconds);
 int  RTC_SetTime(uint8_t u8Hours, uint8_t u8Minutes, uint8_t u8Seconds);
