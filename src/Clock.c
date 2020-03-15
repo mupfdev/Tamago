@@ -160,8 +160,8 @@ void Clock_Update(void)
     _stClock.au8Buffer[25] |= 1 << 0;
     _stClock.au8Buffer[33] |= 1 << 0;
     #else
-    _stClock.au8Buffer[17] |= 1 << 0;
-    _stClock.au8Buffer[25] |= 1 << 0;
+    _stClock.au8Buffer[13] |= 1 << 0;
+    _stClock.au8Buffer[21] |= 1 << 0;
 
     // Add degree symbol
     _stClock.au8Buffer[34] |= 1 << 0;
