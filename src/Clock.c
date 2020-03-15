@@ -14,6 +14,11 @@
 #include "cmsis_os.h"
 #include "task.h"
 
+#ifdef USE_BMP180
+#include <stdlib.h>
+#include "BMP180.h"
+#endif
+
 static void _ClockThread(void* pArg);
 
 /**
@@ -25,6 +30,11 @@ typedef struct
     uint8_t      u8Hours;       ///< Hours (0-23)
     uint8_t      u8Minutes;     ///< Minutes (0-59)
     uint8_t      u8Seconds;     ///< Seconds (0-59)
+
+    #ifdef USE_BMP180
+    int8_t       s8Temperature; ///< Temperature in 1°C
+    #endif
+
     bool         bIsRunning;    ///< Running state
     uint8_t      au8Buffer[64]; ///< Buffer for current clock-face
     TaskHandle_t hClockThread;  ///< Clock thread handle
@@ -87,9 +97,18 @@ void Clock_Update(void)
     int8_t  s8Idx;
     uint8_t u8Temp;
     uint8_t u8Offset;
-    uint8_t u8Digit[4] = { 0 };
+    uint8_t u8Digit[6] = { 0 };
 
     // Extract digits
+    #ifdef USE_BMP180
+    u8Temp = abs(_stClock.s8Temperature);
+    for (s8Idx = 5; s8Idx >= 4; s8Idx--)
+    {
+        u8Digit[s8Idx]  = u8Temp % 10;
+        u8Temp         /= 10;
+    }
+    #endif
+
     u8Temp = _stClock.u8Minutes;
     for (s8Idx = 3; s8Idx >= 2; s8Idx--)
     {
@@ -107,17 +126,56 @@ void Clock_Update(void)
     // Write digits to clock-face buffer
     for (uint8_t u8Dig = 0; u8Dig < 4; u8Dig++)
     {
+        uint8_t u8IdxStart = 20;
+        uint8_t u8IdxEnd   = 38;
+        #ifdef USE_BMP180
+        u8IdxStart =  8;
+        u8IdxEnd   = 26;
+        #endif
+
         u8Offset = u8Digit[u8Dig];
-        for (uint8_t u8Idx = 20 + u8Dig; u8Idx <= 38 + u8Dig; u8Idx += 4)
+
+        for (uint8_t u8Idx = u8IdxStart + u8Dig; u8Idx <= u8IdxEnd + u8Dig; u8Idx += 4)
         {
             _stClock.au8Buffer[u8Idx] = _au8ClockFont[u8Offset];
             u8Offset += 10;
         }
     }
 
+    #ifdef USE_BMP180
+    for (uint8_t u8Dig = 4; u8Dig < 6; u8Dig++)
+    {
+        u8Offset = u8Digit[u8Dig];
+
+        for (uint8_t u8Idx = 33 + u8Dig; u8Idx <= 51 + u8Dig; u8Idx += 4)
+        {
+            _stClock.au8Buffer[u8Idx] = _au8ClockFont[u8Offset];
+            u8Offset += 10;
+        }
+    }
+    #endif
+
     // Add clock-face divider
+    #ifndef USE_BMP180
     _stClock.au8Buffer[25] |= 1 << 0;
     _stClock.au8Buffer[33] |= 1 << 0;
+    #else
+    _stClock.au8Buffer[17] |= 1 << 0;
+    _stClock.au8Buffer[25] |= 1 << 0;
+
+    // Add degree symbol
+    _stClock.au8Buffer[34] |= 1 << 0;
+    _stClock.au8Buffer[35] |= 1 << 7;
+    _stClock.au8Buffer[38] |= 1 << 0;
+    _stClock.au8Buffer[39] |= 1 << 7;
+
+    // Add minus sign if temperature is below 0°C
+    if (0 > _stClock.s8Temperature)
+    {
+        _stClock.au8Buffer[44] |= 1 << 0;
+        _stClock.au8Buffer[44] |= 1 << 1;
+    }
+    #endif
 }
 
 /**
@@ -131,6 +189,9 @@ static void _ClockThread(void* pArg)
     while (_stClock.bIsRunning)
     {
         RTC_GetTime(&_stClock.u8Hours, &_stClock.u8Minutes, &_stClock.u8Seconds);
+
+        // Todo: Update temperature
+
         Clock_Update();
         osDelay(10);
     }
