@@ -37,24 +37,6 @@
  * @li PA3  ---> DMD B pin
  * @li PC13 ---> LED
  *
- * @page    DMD Dot Matrix Display
- * @section DMDHowTo How to connect
- * @code{.unparsed}
- *
- *      +-----+
- *      |     |           OE   ---> PA2
- * OE   | . . |  A        A    ---> PA1
- * GND  | . . |  B        B    ---> PA0
- * GND  | . . |  NC       CLK  ---> PA5 (SPI1_SCK)
- * GND    . . |  CLK      SCLK ---> PA3
- * GND    . . |  SCLK     R    ---> PA8 (SPI1_MOSI)
- * GND  | . . |  R
- * GND  | . . |  NC
- * GND  | . . |  NC
- *      |     |
- *      +-----+
- *
- * @endcode
  */
 
 #include "stm32f1xx_hal.h"
@@ -111,7 +93,8 @@ int System_Init(void)
 
     /** Initialises the CPU, AHB and APB busses clocks
      */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
+    RCC_OscInitStruct.LSEState       = RCC_LSE_ON;
     RCC_OscInitStruct.HSEState       = RCC_HSE_ON;
     RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
     RCC_OscInitStruct.HSIState       = RCC_HSI_ON;
@@ -181,7 +164,7 @@ int System_Init(void)
         return nStatus;
     }
 
-    System_RTC_Init();
+    nStatus = System_RTC_Init();
 
     return nStatus;
 }
