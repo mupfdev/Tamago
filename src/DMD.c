@@ -11,12 +11,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "DMD.h"
-#include "FreeRTOS.h"
 #include "MCAL.h"
-#include "cmsis_os.h"
-#include "task.h"
-
-static void _DMDThread(void* pArg);
 
 /**
  * @struct DMDData
@@ -24,9 +19,7 @@ static void _DMDThread(void* pArg);
  */
 typedef struct
 {
-    bool         bIsRunning; ///< Running state
-    uint8_t*     pu8Buffer;  ///< DMD image buffer
-    TaskHandle_t hDMDThread; ///< DMD thread handle
+    uint8_t* pu8Buffer;  ///< DMD image buffer
 
 } DMDData;
 
@@ -35,27 +28,6 @@ typedef struct
  * @brief DMD driver private data
  */
 static DMDData _stDMD = { 0 };
-
-/**
- * @brief  Initialise DMD driver
- * @return Error code
- * @retval  0: OK
- * @retval -1: Error
- */
-int DMD_Init(void)
-{
-    BaseType_t nStatus = pdPASS;
-
-    nStatus = xTaskCreate(
-        _DMDThread,
-        "DMD",
-        configMINIMAL_STACK_SIZE,
-        NULL,
-        osPriorityNormal,
-        &_stDMD.hDMDThread);
-
-    return (pdPASS != nStatus) ? (-1) : (0);
-}
 
 /**
  * @brief Latch shift register data to output
@@ -122,50 +94,44 @@ void DMD_SetBuffer(uint8_t* pu8Buffer)
 }
 
 /**
- * @brief DMD thread
- * @param pArg: Unused
+ * @brief   Update dot matrix display
+ * @details Need to be called continously
  */
-static void _DMDThread(void* pArg)
+void DMD_Update(void)
 {
     static uint8_t u8Scanline = 0;
 
-    _stDMD.bIsRunning = true;
-
-    while (_stDMD.bIsRunning)
+    uint16_t u16Offset = 4U * u8Scanline;
+    for (uint8_t u8Idx = 0; u8Idx < 4U; u8Idx++)
     {
-        uint16_t u16Offset = 4U * u8Scanline;
-        for (uint8_t u8Idx = 0; u8Idx < 4U; u8Idx++)
-        {
-            SPI_Transmit(_stDMD.pu8Buffer + (u16Offset + u8Idx + 48), 1);
-            SPI_Transmit(_stDMD.pu8Buffer + (u16Offset + u8Idx + 32), 1);
-            SPI_Transmit(_stDMD.pu8Buffer + (u16Offset + u8Idx + 16), 1);
-            SPI_Transmit(_stDMD.pu8Buffer + (u16Offset + u8Idx),      1);
-        }
-
-        DMD_OE_RowsOff();
-        DMD_Latch();
-
-        switch (u8Scanline)
-        {
-            case 0:
-                DMD_LightRows(DMD_ROWS_1_5_9_13);
-                u8Scanline = 1;
-                break;
-            case 1:
-                DMD_LightRows(DMD_ROWS_2_6_10_14);
-                u8Scanline = 2;
-                break;
-            case 2:
-                DMD_LightRows(DMD_ROWS_3_7_11_15);
-                u8Scanline = 3;
-                break;
-            case 3:
-                DMD_LightRows(DMD_ROWS_4_8_12_16);
-                u8Scanline = 0;
-                break;
-        }
-
-        DMD_OE_RowsOn();
-        osDelay(5);
+        SPI_Transmit(_stDMD.pu8Buffer + (u16Offset + u8Idx + 48), 1);
+        SPI_Transmit(_stDMD.pu8Buffer + (u16Offset + u8Idx + 32), 1);
+        SPI_Transmit(_stDMD.pu8Buffer + (u16Offset + u8Idx + 16), 1);
+        SPI_Transmit(_stDMD.pu8Buffer + (u16Offset + u8Idx),      1);
     }
+
+    DMD_OE_RowsOff();
+    DMD_Latch();
+
+    switch (u8Scanline)
+    {
+        case 0:
+            DMD_LightRows(DMD_ROWS_1_5_9_13);
+            u8Scanline = 1;
+            break;
+        case 1:
+            DMD_LightRows(DMD_ROWS_2_6_10_14);
+            u8Scanline = 2;
+            break;
+        case 2:
+            DMD_LightRows(DMD_ROWS_3_7_11_15);
+            u8Scanline = 3;
+            break;
+        case 3:
+            DMD_LightRows(DMD_ROWS_4_8_12_16);
+            u8Scanline = 0;
+            break;
+    }
+
+    DMD_OE_RowsOn();
 }

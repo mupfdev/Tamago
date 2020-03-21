@@ -23,10 +23,6 @@ This project is built upon
 [BluePrint](https://github.com/mupfelofen-de/BluePrint), a base project
 for the STM32F103C8T6 aka [blue pill board](http://reblag.dk/stm32/).
 
-## Status
-
-Far from finished; work in progress.
-
 ## Installation
 
 1. Install [PlatformIO Core](http://docs.platformio.org/page/core.html)

@@ -9,17 +9,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "Clock.h"
-#include "FreeRTOS.h"
 #include "MCAL.h"
-#include "cmsis_os.h"
-#include "task.h"
 
 #ifdef USE_BMP180
 #include <stdlib.h>
 #include "BMP180.h"
 #endif
-
-static void _ClockThread(void* pArg);
 
 /**
  * @struct ClockData
@@ -35,9 +30,7 @@ typedef struct
     int8_t       s8Temperature; ///< Temperature in 1°C
     #endif
 
-    bool         bIsRunning;    ///< Running state
     uint8_t      au8Buffer[64]; ///< Buffer for current clock-face
-    TaskHandle_t hClockThread;  ///< Clock thread handle
 
 } ClockData;
 
@@ -60,27 +53,6 @@ static const uint8_t _au8ClockFont[50] = {
 };
 
 /**
- * @brief  Initialise clock handler
- * @return Error code
- * @retval  0: OK
- * @retval -1: Error
- */
-int Clock_Init(void)
-{
-    BaseType_t nStatus = pdPASS;
-
-    nStatus = xTaskCreate(
-        _ClockThread,
-        "ClockHandler",
-        configMINIMAL_STACK_SIZE,
-        NULL,
-        osPriorityNormal,
-        &_stClock.hClockThread);
-
-    return (pdPASS != nStatus) ? (-1) : (0);
-}
-
-/**
  * @brief  Get address of image buffer
  * @return Pointer to image buffer
  */
@@ -98,6 +70,9 @@ void Clock_Update(void)
     uint8_t u8Temp;
     uint8_t u8Offset;
     uint8_t u8Digit[6] = { 0 };
+
+    // Fetch current time from RTC
+    RTC_GetTime(&_stClock.u8Hours, &_stClock.u8Minutes, &_stClock.u8Seconds);
 
     // Extract digits
     #ifdef USE_BMP180
@@ -176,23 +151,4 @@ void Clock_Update(void)
         _stClock.au8Buffer[44] |= 1 << 1;
     }
     #endif
-}
-
-/**
- * @brief Clock thread
- * @param pArg: Unused
- */
-static void _ClockThread(void* pArg)
-{
-    _stClock.bIsRunning = true;
-
-    while (_stClock.bIsRunning)
-    {
-        RTC_GetTime(&_stClock.u8Hours, &_stClock.u8Minutes, &_stClock.u8Seconds);
-
-        // Todo: Update temperature
-
-        Clock_Update();
-        osDelay(10);
-    }
 }

@@ -38,9 +38,9 @@ typedef enum
 
 } DMDRows;
 
-int  DMD_Init(void);
 void DMD_Latch(void);
 void DMD_LightRows(DMDRows eRows);
 void DMD_OE_RowsOff(void);
 void DMD_OE_RowsOn(void);
 void DMD_SetBuffer(uint8_t* pucBuffer);
+void DMD_Update(void);

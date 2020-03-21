@@ -67,20 +67,20 @@ typedef struct
 } BMP180CalibCoefficients;
 
 /**
- * @struct BMP180Data
+ * @struct BMP180_Data
  * @brief  BMP180 driver data
  */
 typedef struct
 {
     BMP180CalibCoefficients stCalibData; ///< Calibration coefficients
 
-} BMP180Data;
+} BMP180_Data;
 
 /**
  * @var   _stBMP180Data
  * @brief BMP180 driver private data
  */
-static BMP180Data _stBMP180Data = { 0 };
+static BMP180_Data _stBMP180Data = { 0 };
 
 /**
  * @brief  Initialise BMP180 driver
