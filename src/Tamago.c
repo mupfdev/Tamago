@@ -4,13 +4,45 @@
  * @brief     Tamago main application handler
  * @author    Michael Fitzmayer
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
+ * @page    Schematics Schematics
+ * @section SchSTM STM32F103C8xx
+ * @code{.unparsed}
+ *
+ * Todo.
+ *
+ * @endcode
+ * @section SchDMD Dot Matrix Display
+ * @code{.unparsed}
+ *
+ * RGB variant:
+ *
+ * Todo.
+ *
+ * Monochrome variant:
+ *
+ *      +-----+
+ *      |     |           OE        ---> PA2
+ * OE   | . . |  A        A         ---> PA1
+ * GND  | . . |  B        B         ---> PA0
+ * GND  | . . |  NC       CLK       ---> PA5 (SPI1_SCK)
+ * GND    . . |  CLK      SCLK      ---> PA3
+ * GND    . . |  SCLK     R/[G]/[B] ---> PA8 (SPI1_MOSI)
+ * GND  | . . |  R
+ * GND  | . . |  [G]
+ * GND  | . . |  [B]
+ *      |     |
+ *      +-----+
+ *
+ * @endcode
  */
 
 #include "Animation.h"
+#include "BMP180.h"
 #include "Clock.h"
 #include "DMD.h"
 #include "FreeRTOS.h"
 #include "LifeCycle.h"
+#include "M24FC256.h"
 #include "Tamago.h"
 #include "cmsis_os.h"
 #include "task.h"
@@ -31,19 +63,7 @@ int Tamago_Init(void)
     BaseType_t nStatus = pdPASS;
     int        nError  = 0;
 
-    nError = DMD_Init();
-    if (0 != nError)
-    {
-        return -1;
-    }
-
     nError = Animation_Init();
-    if (0 != nError)
-    {
-        return -1;
-    }
-
-    nError = Clock_Init();
     if (0 != nError)
     {
         return -1;
@@ -83,13 +103,15 @@ static void _TamagoThread(void* pArg)
 {
     Stats* pstStats = LifeCycle_GetStats();
 
-    //DMD_SetBuffer(Animation_GetBufferAddr());
     DMD_SetBuffer(Clock_GetBufferAddr());
+    //DMD_SetBuffer(Animation_GetBufferAddr());
 
     while (1)
     {
         _SetAnimationByStats(pstStats);
-        osDelay(10);
+        Clock_Update();
+        DMD_Update();
+        osDelay(5);
     }
 }
 
