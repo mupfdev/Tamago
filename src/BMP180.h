@@ -8,8 +8,9 @@
 
 #ifdef USE_BMP180
 
-#define BMP180_ADDRESS_READ  0xef ///< Device address for read operations
-#define BMP180_ADDRESS_WRITE 0xee ///< Device address for write operations
+#define BMP180_CHIP_ID       0x55 ///< Chip ID
+#define BMP180_ADDRESS_READ  0xEF ///< Device address for read operations
+#define BMP180_ADDRESS_WRITE 0xEE ///< Device address for write operations
 
 #include <stdint.h>
 
@@ -26,7 +27,7 @@ typedef enum
     OSS_PRESSURE_HIGH_RES       = 0xB4, ///< High resolution, max. conversion time 13.5ms, 7uA
     OSS_PRESSURE_ULTRA_HIGH_RES = 0xF4  ///< Ultra-high resolution, max conversion time 25.5ms, 12uA
 
-} ControlRegValue;
+} BMP180_ControlRegValue;
 
 int BMP180_Init(void);
 
