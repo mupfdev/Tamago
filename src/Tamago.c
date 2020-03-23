@@ -63,6 +63,12 @@ int Tamago_Init(void)
     BaseType_t nStatus = pdPASS;
     int        nError  = 0;
 
+    nError = BMP180_Init();
+    if (0 != nError)
+    {
+        return -1;
+    }
+
     nError = Animation_Init();
     if (0 != nError)
     {
