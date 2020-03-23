@@ -41,8 +41,8 @@
  */
 int M24FC256_Read(uint16_t u16Address, uint8_t *pu8RxBuffer, uint8_t u8Pages)
 {
-    int sRemainingBytes = u8Pages * M24FC256_PAGESIZE;
-    int sMemoryAddress  = 0;
+    int     sRemainingBytes = u8Pages * M24FC256_PAGESIZE;
+    int     sMemoryAddress  = 0;
 
     if (NULL == pu8RxBuffer)
     {
@@ -56,6 +56,7 @@ int M24FC256_Read(uint16_t u16Address, uint8_t *pu8RxBuffer, uint8_t u8Pages)
         int nError = I2C_Receive(
             M24FC256_ADDRESS,
             u16Address  + sMemoryAddress,
+            I2C_MEMSIZE_16BIT,
             pu8RxBuffer + sMemoryAddress,
             M24FC256_PAGESIZE);
 
@@ -100,6 +101,7 @@ int M24FC256_Write(uint16_t u16Address, uint8_t *pu8TxBuffer, uint8_t u8Pages)
         int nError = I2C_Transmit(
             M24FC256_ADDRESS,
             u16Address + sMemoryAddress,
+            I2C_MEMSIZE_16BIT,
             pu8TxBuffer + sMemoryAddress,
             M24FC256_PAGESIZE);
 
