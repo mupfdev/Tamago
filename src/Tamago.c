@@ -60,14 +60,16 @@ static void         _SetAnimationByStats(Stats* pstStats); ///< Set animation
  */
 int Tamago_Init(void)
 {
-    BaseType_t nStatus = pdPASS;
     int        nError  = 0;
+    BaseType_t nStatus = pdPASS;
 
+    #ifdef USE_BMP180
     nError = BMP180_Init();
     if (0 != nError)
     {
         return -1;
     }
+    #endif
 
     nError = Animation_Init();
     if (0 != nError)
@@ -115,6 +117,13 @@ static void _TamagoThread(void* pArg)
     while (1)
     {
         _SetAnimationByStats(pstStats);
+
+        #ifdef USE_BMP180
+        int8_t s8Temp = 0;
+        BMP180_ReadTemperature(&s8Temp);
+        Clock_SetTemperature(s8Temp);
+        #endif
+
         Clock_Update();
         DMD_Update();
         osDelay(5);

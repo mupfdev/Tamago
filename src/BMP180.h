@@ -30,5 +30,6 @@ typedef enum
 } BMP180_ControlRegValue;
 
 int BMP180_Init(void);
+int BMP180_ReadTemperature(int8_t* ps8Temp);
 
 #endif // USE_BMP180

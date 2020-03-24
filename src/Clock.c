@@ -152,3 +152,15 @@ void Clock_Update(void)
     }
     #endif
 }
+
+#ifdef USE_BMP180
+/**
+ * @brief Set temperature
+ * @param s8Temp
+ *        Temperature in 1°C
+ */
+void Clock_SetTemperature(int8_t s8Temp)
+{
+    _stClock.s8Temperature = s8Temp;
+}
+#endif

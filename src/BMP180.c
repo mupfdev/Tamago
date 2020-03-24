@@ -16,41 +16,30 @@
 #include "MCAL.h"
 
 /**
- * @enum  BMP180_MemoryMap
- * @brief BMP180 Global memory map
+ * @enum  BMP180_Register
+ * @brief BMP180 register (global memory map)
  */
 typedef enum
 {
-    E2PROM_AC1_MSB = 0xAA, ///< Calibration coeff. AC1 MSB
-    E2PROM_AC1_LSB = 0xAB, ///< Calibration coeff. AC1 LSB
-    E2PROM_AC2_MSB = 0xAC, ///< Calibration coeff. AC2 MSB
-    E2PROM_AC2_LSB = 0xAD, ///< Calibration coeff. AC2 LSB
-    E2PROM_AC3_MSB = 0xAE, ///< Calibration coeff. AC3 MSB
-    E2PROM_AC3_LSB = 0xAF, ///< Calibration coeff. AC3 LSB
-    E2PROM_AC4_MSB = 0xB0, ///< Calibration coeff. AC4 MSB
-    E2PROM_AC4_LSB = 0xB1, ///< Calibration coeff. AC4 LSB
-    E2PROM_AC5_MSB = 0xB2, ///< Calibration coeff. AC5 MSB
-    E2PROM_AC5_LSB = 0xB3, ///< Calibration coeff. AC5 LSB
-    E2PROM_AC6_MSB = 0xB4, ///< Calibration coeff. AC6 MSB
-    E2PROM_AC6_LSB = 0xB5, ///< Calibration coeff. AC6 LSB
-    E2PROM_B1_MSB  = 0xB6, ///< Calibration coeff. B1 MSB
-    E2PROM_B1_LSB  = 0xB7, ///< Calibration coeff. B1 LSB
-    E2PROM_B2_MSB  = 0xB8, ///< Calibration coeff. BS MSB
-    E2PROM_B2_LSB  = 0xB9, ///< Calibration coeff. B2 LSB
-    E2PROM_MB_MSB  = 0xBA, ///< Calibration coeff. MB MSB
-    E2PROM_MB_LSB  = 0xBB, ///< Calibration coeff. MB LSB
-    E2PROM_MC_MSB  = 0xBC, ///< Calibration coeff. MC MSB
-    E2PROM_MC_LSB  = 0xBD, ///< Calibration coeff. MC LSB
-    E2PROM_MD_MSB  = 0xBE, ///< Calibration coeff. MD MSB
-    E2PROM_MD_LSB  = 0xBF, ///< Calibration coeff. MD LSB
-    CHIP_ID        = 0xD0, ///< Chip-ID, can be checked against @ref BMP180_CHIP_ID
-    SOFT_RESET     = 0xE0, ///< Soft reset if set to 0xB6
-    CTRL_MEAS      = 0xF4, ///< Measurement control
-    OUT_MSB        = 0xF6, ///< ADC out LSB
-    OUT_LSB        = 0xF7, ///< ADC out MSB
-    OUT_XLSB       = 0xF8  ///< ADC out XLSB
+    E2PROM_AC1 = 0xAA, ///< Calibration coeff. AC1
+    E2PROM_AC2 = 0xAC, ///< Calibration coeff. AC2
+    E2PROM_AC3 = 0xAE, ///< Calibration coeff. AC3
+    E2PROM_AC4 = 0xB0, ///< Calibration coeff. AC4
+    E2PROM_AC5 = 0xB2, ///< Calibration coeff. AC5
+    E2PROM_AC6 = 0xB4, ///< Calibration coeff. AC6
+    E2PROM_B1  = 0xB6, ///< Calibration coeff. B1
+    E2PROM_B2  = 0xB8, ///< Calibration coeff. BS
+    E2PROM_MB  = 0xBA, ///< Calibration coeff. MB
+    E2PROM_MC  = 0xBC, ///< Calibration coeff. MC
+    E2PROM_MD  = 0xBE, ///< Calibration coeff. MD
+    CHIP_ID    = 0xD0, ///< Chip-ID, can be checked against @ref BMP180_CHIP_ID
+    SOFT_RESET = 0xE0, ///< Soft reset if set to 0xB6
+    CTRL_MEAS  = 0xF4, ///< Measurement control
+    OUT_MSB    = 0xF6, ///< ADC out LSB
+    OUT_LSB    = 0xF7, ///< ADC out MSB
+    OUT_XLSB   = 0xF8  ///< ADC out XLSB
 
-} BMP180_MemoryMap;
+} BMP180_Register;
 
 /**
  * @struct BMP180_CalibCoefficients
@@ -89,6 +78,8 @@ typedef struct
  */
 static BMP180_Data _stBMP180Data = { 0 };
 
+static int _BMP180_ReadRegister(const BMP180_Register eReg, int16_t* ps16Value);
+
 /**
  * @brief  Initialise BMP180 driver
  * @return Error code
@@ -114,12 +105,101 @@ int BMP180_Init(void)
     }
 
     // Read calibration data from E²PROM
-    nError = I2C_Receive(BMP180_ADDRESS_READ, E2PROM_AC1_MSB, I2C_MEMSIZE_8BIT, (uint8_t*)&_stBMP180Data.stCalibData, 22);
+    _BMP180_ReadRegister(E2PROM_AC1, &_stBMP180Data.stCalibData.s16AC1);
+    _BMP180_ReadRegister(E2PROM_AC2, &_stBMP180Data.stCalibData.s16AC2);
+    _BMP180_ReadRegister(E2PROM_AC3, &_stBMP180Data.stCalibData.s16AC3);
+    _BMP180_ReadRegister(E2PROM_AC4, (int16_t*)&_stBMP180Data.stCalibData.u16AC4);
+    _BMP180_ReadRegister(E2PROM_AC5, (int16_t*)&_stBMP180Data.stCalibData.u16AC5);
+    _BMP180_ReadRegister(E2PROM_AC6, (int16_t*)&_stBMP180Data.stCalibData.u16AC6);
+    _BMP180_ReadRegister(E2PROM_B1,  &_stBMP180Data.stCalibData.s16B1);
+    _BMP180_ReadRegister(E2PROM_B2,  &_stBMP180Data.stCalibData.s16B2);
+    _BMP180_ReadRegister(E2PROM_MB,  &_stBMP180Data.stCalibData.s16MB);
+    _BMP180_ReadRegister(E2PROM_MC,  &_stBMP180Data.stCalibData.s16MC);
+    _BMP180_ReadRegister(E2PROM_MD,  &_stBMP180Data.stCalibData.s16MD);
+
+    return 0;
+}
+
+/**
+ * @brief  Read current temperature
+ * @param  ps8Temp
+ *         Temperature in 1°C
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
+ */
+int BMP180_ReadTemperature(int8_t* ps8Temp)
+{
+    int     nError;
+    uint8_t u8RegValue = OSS_TEMPERATURE;
+    int32_t s32UT      = 0U;
+    float   fX1        = 0.f;
+    float   fX2        = 0.f;
+    float   fB5        = 0.f;
+    float   fT         = 0.f;
+
+    // Trigger temperature conversion
+    nError = I2C_Transmit(BMP180_ADDRESS_WRITE, CTRL_MEAS, I2C_MEMSIZE_8BIT, &u8RegValue, 1);
     if (0 != nError)
     {
         return -1;
     }
     I2C_WaitUntilReady(BMP180_ADDRESS_READ);
+
+    // Wait until conversion is complete
+    MCAL_Sleep(5);
+
+    // Read uncompensated temperature value
+    nError = _BMP180_ReadRegister(OUT_MSB, (int16_t*)&s32UT);
+    if (0 != nError)
+    {
+        return -1;
+    }
+
+    // Calculate true temperature
+    fX1  = ((float)s32UT - (float)_stBMP180Data.stCalibData.u16AC6);
+    fX1 *= ((float)_stBMP180Data.stCalibData.u16AC5 / 32768.f);
+
+    fX2  = ((float)_stBMP180Data.stCalibData.s16MC * 2048.f);
+    fX2 /= (fX1 + (float)_stBMP180Data.stCalibData.s16MD);
+
+    fB5  = fX1 + fX2;
+
+    fT   = (fB5 + 8.f);
+    fT  /= 16.f;
+
+    *ps8Temp = (int8_t)(fT / 10.f);
+
+    return 0;
+}
+
+/**
+ * @brief  Read register
+ * @param  eReg
+ *         BMP180 E²PROM register
+ * @param  ps16Value
+ *         Register value
+ * @return Error code
+ * @retval  0: OK
+ * @retval -1: Error
+ */
+static int _BMP180_ReadRegister(const BMP180_Register eReg, int16_t* ps16Value)
+{
+    int nError;
+
+    if (OUT_LSB < eReg)
+    {
+        return -1;
+    }
+
+    nError = I2C_Receive(BMP180_ADDRESS_READ, eReg, I2C_MEMSIZE_8BIT, (uint8_t*)ps16Value, 2);
+    if (0 != nError)
+    {
+        return -1;
+    }
+    I2C_WaitUntilReady(BMP180_ADDRESS_READ);
+
+    *ps16Value = ((*ps16Value << 8) + (*ps16Value >> 8));
 
     return 0;
 }
