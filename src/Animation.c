@@ -9,12 +9,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "Animation.h"
-#include "FreeRTOS.h"
-#include "cmsis_os.h"
-#include "task.h"
 
 static void _AddIconToBuffer(const IconID eID, uint8_t u8IconOffset);
-static void _AnimationThread(void* pArg);
 
 /**
  * @struct AnimationData
@@ -22,16 +18,13 @@ static void _AnimationThread(void* pArg);
  */
 typedef struct
 {
-    bool         bIsRunning;                ///< Running state
     Animation    astSet[NUM_OF_ANIMATIONS]; ///< Pre-initialised animations
     AnimID       eAnim;                     ///< Current set animation (ID)
     uint8_t      u8Frame;                   ///< Current animation frame
     uint8_t      au8Buffer[64];             ///< Buffer for current animation frame
-    uint16_t     u16UpdateRate;             ///< Update rate in ms
     bool         bShowPoo;                  ///< Show poo icon
     bool         bShowSkull;                ///< Show skull icon
     bool         bShowSleep;                ///< Show sleep icon
-    TaskHandle_t hAnimationThread;          ///< Animation thread handle
 
 } AnimationData;
 
@@ -2991,14 +2984,9 @@ static const uint8_t _au8FrameData[NUM_OF_FRAMES * FRAME_SIZE] = {
 
 /**
  * @brief  Initialise animation handler
- * @return Error code
- * @retval  0: OK
- * @retval -1: Error
  */
-int Animation_Init(void)
+void Animation_Init(void)
 {
-    BaseType_t nStatus = pdPASS;
-
     // Initialise animations
     const uint16_t au16Offset[NUM_OF_ANIMATIONS] = {
         0,     // Offset, Egg idle
@@ -3039,16 +3027,6 @@ int Animation_Init(void)
         _stAnimation.astSet[u8Index].u16Offset = au16Offset[u8Index];
         _stAnimation.astSet[u8Index].u8Length  = au8Length[u8Index];
     }
-
-    nStatus = xTaskCreate(
-        _AnimationThread,
-        "AnimHandler",
-        configMINIMAL_STACK_SIZE,
-        NULL,
-        osPriorityNormal,
-        &_stAnimation.hAnimationThread);
-
-    return (pdPASS != nStatus) ? (-1) : (0);
 }
 
 /**
@@ -3090,16 +3068,6 @@ void Animation_ShowIcon(IconID eID, bool bShow)
 void Animation_Set(AnimID eID)
 {
     _stAnimation.eAnim = eID;
-}
-
-/**
- * @brief Set update rate
- * @param u16UpdateRate
- *        Update rate in ms
- */
-void Animation_SetUpdateRate(uint16_t u16UpdateRate)
-{
-    _stAnimation.u16UpdateRate = u16UpdateRate;
 }
 
 /**
@@ -3182,20 +3150,4 @@ static void _AddIconToBuffer(const IconID eID, uint8_t u8IconOffset)
     }
 
     u8IconOffset = !u8IconOffset;
-}
-
-/**
- * @brief Animation thread
- * @param pArg: Unused
- */
-static void _AnimationThread(void* pArg)
-{
-    _stAnimation.bIsRunning = true;
-
-    while (_stAnimation.bIsRunning)
-    {
-        Animation_Update();
-
-        osDelay(_stAnimation.u16UpdateRate);
-    }
 }

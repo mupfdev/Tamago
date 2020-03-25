@@ -7,10 +7,7 @@
  */
 
 #include <stdbool.h>
-#include "FreeRTOS.h"
 #include "LifeCycle.h"
-#include "cmsis_os.h"
-#include "task.h"
 
 static void _LifeCycleThread(void* pArg);
 
@@ -20,9 +17,7 @@ static void _LifeCycleThread(void* pArg);
  */
 typedef struct
 {
-    bool         bIsRunning;       ///< Is running state
-    Stats        stStats;          ///< Statistics
-    TaskHandle_t hLifeCycleThread; ///< Life cycle thread handle
+    Stats stStats; ///< Statistics
 
 } LifeCycleData;
 
@@ -34,31 +29,10 @@ static LifeCycleData _stLifeCycle = { 0 };
 
 /**
  * @brief  Initialise life cycle
- * @return Error code
- * @retval  0: OK
- * @retval -1: Error
  */
-int LifeCycle_Init(void)
+void LifeCycle_Init(void)
 {
-    BaseType_t nStatus = pdPASS;
-
     _stLifeCycle.stStats.eEvolution = EGG;
-    _stLifeCycle.bIsRunning         = true;
-
-    nStatus = xTaskCreate(
-        _LifeCycleThread,
-        "Life cycle",
-        configMINIMAL_STACK_SIZE,
-        NULL,
-        osPriorityNormal,
-        &_stLifeCycle.hLifeCycleThread);
-
-    if (pdPASS != nStatus)
-    {
-        return -1;
-    }
-
-    return (pdPASS != nStatus) ? (-1) : (0);
 }
 
 /**
@@ -108,16 +82,4 @@ void LifeCycle_ClearFlat(StatusFlag eFlag)
 void LifeCycle_SetFlag(StatusFlag eFlag)
 {
     _stLifeCycle.stStats.u16Flags |= 1 << eFlag;
-}
-
-/**
- * @brief Life cycle thread
- * @param pArg: Unused
- */
-static void _LifeCycleThread(void* pArg)
-{
-    while (_stLifeCycle.bIsRunning)
-    {
-        osDelay(1);
-    }
 }

@@ -8,8 +8,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define FRAME_SIZE             64     ///< Frame size in byte
-#define NUM_OF_FRAMES         167     ///< Total number of frames
+#define FRAME_SIZE     64 ///< Frame size in byte
+#define NUM_OF_FRAMES 167 ///< Total number of frames
 
 /**
  * @enum  AnimID
@@ -58,9 +58,8 @@ typedef struct
 
 } Animation;
 
-int      Animation_Init(void);
+void     Animation_Init(void);
 uint8_t* Animation_GetBufferAddr(void);
 void     Animation_ShowIcon(IconID eID, bool bShow);
 void     Animation_Set(AnimID eID);
-void     Animation_SetUpdateRate(uint16_t u16RefreshRate);
 void     Animation_Update(void);

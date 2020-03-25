@@ -53,7 +53,7 @@ typedef struct
 
 } Stats;
 
-int    LifeCycle_Init(void);
+void   LifeCycle_Init(void);
 Stats* LifeCycle_GetStats(void);
 bool   LifeCycle_IsFlagSet(StatusFlag eFlag);
 void   LifeCycle_ClearFlat(StatusFlag eFlag);
