@@ -78,7 +78,8 @@ typedef struct
  */
 static BMP180_Data _stBMP180Data = { 0 };
 
-static int _BMP180_ReadRegister(const BMP180_Register eReg, int16_t* ps16Value);
+static int16_t _BMP180_GetB5(int32_t s32UT);
+static int     _BMP180_ReadRegister(const BMP180_Register eReg, int16_t* ps16Value);
 
 /**
  * @brief  Initialise BMP180 driver
@@ -132,11 +133,8 @@ int BMP180_ReadTemperature(int8_t* ps8Temp)
 {
     int     nError;
     uint8_t u8RegValue = OSS_TEMPERATURE;
-    int32_t s32UT      = 0U;
-    float   fX1        = 0.f;
-    float   fX2        = 0.f;
-    float   fB5        = 0.f;
-    float   fT         = 0.f;
+    int32_t s32UT      = 0;
+    int32_t s32T       = 0;
 
     // Trigger temperature conversion
     nError = I2C_Transmit(BMP180_ADDRESS_WRITE, CTRL_MEAS, I2C_MEMSIZE_8BIT, &u8RegValue, 1);
@@ -157,20 +155,30 @@ int BMP180_ReadTemperature(int8_t* ps8Temp)
     }
 
     // Calculate true temperature
-    fX1  = ((float)s32UT - (float)_stBMP180Data.stCalibData.u16AC6);
-    fX1 *= ((float)_stBMP180Data.stCalibData.u16AC5 / 32768.f);
+    s32T  = (_BMP180_GetB5(s32UT) + 8) >> 4;
+    s32T /= 10;
 
-    fX2  = ((float)_stBMP180Data.stCalibData.s16MC * 2048.f);
-    fX2 /= (fX1 + (float)_stBMP180Data.stCalibData.s16MD);
-
-    fB5  = fX1 + fX2;
-
-    fT   = (fB5 + 8.f);
-    fT  /= 16.f;
-
-    *ps8Temp = (int8_t)(fT / 10.f);
+    *ps8Temp = (int8_t)(s32T);
 
     return 0;
+}
+
+/**
+ * @brief   Convert uncompensated temperature to B5
+ * @details As required to calculate true temperature and true pressure
+ * @param   s32UT
+ *          Uncompensated temperature
+ * @return  B5
+ */
+static int16_t _BMP180_GetB5(int32_t s32UT)
+{
+    int32_t s32X1 = 0;
+    int32_t s32X2 = 0;
+
+    s32X1  = (s32UT - _stBMP180Data.stCalibData.u16AC6) * (_stBMP180Data.stCalibData.u16AC5) >> 15;
+    s32X2  = (_stBMP180Data.stCalibData.s16MC << 11)    / (s32X1 + _stBMP180Data.stCalibData.s16MD);
+
+    return s32X1 + s32X2;
 }
 
 /**
