@@ -47,10 +47,10 @@
 #include "cmsis_os.h"
 #include "task.h"
 
-static void _TamagoThread(void* pArg);
+static TaskHandle_t _hUpdateThread; ///< Update thread handle
 
-static TaskHandle_t _hTamagoThread;                        ///< Tamago main thread handle
-static void         _SetAnimationByStats(Stats* pstStats); ///< Set animation
+static void _SetAnimationByStats(Stats* pstStats);
+static void _UpdateThread(void* pArg);
 
 /**
  * @brief  Initialise Tamago main application handler
@@ -71,25 +71,16 @@ int Tamago_Init(void)
     }
     #endif
 
-    nError = Animation_Init();
-    if (0 != nError)
-    {
-        return -1;
-    }
-
-    nError = LifeCycle_Init();
-    if (0 != nError)
-    {
-        return -1;
-    }
+    Animation_Init();
+    LifeCycle_Init();
 
     nStatus = xTaskCreate(
-        _TamagoThread,
-        "Tamago",
+        _UpdateThread,
+        "Update",
         configMINIMAL_STACK_SIZE,
         NULL,
         osPriorityNormal,
-        &_hTamagoThread);
+        &_hUpdateThread);
 
     if (pdPASS == nStatus)
     {
@@ -104,12 +95,13 @@ int Tamago_Init(void)
 }
 
 /**
- * @brief Tamago main thread
+ * @brief Update thread
  * @param pArg: Unused
  */
-static void _TamagoThread(void* pArg)
+static void _UpdateThread(void* pArg)
 {
-    Stats* pstStats = LifeCycle_GetStats();
+    Stats*   pstStats = LifeCycle_GetStats();
+    uint16_t u16Cnt   = 0;
 
     DMD_SetBuffer(Clock_GetBufferAddr());
     //DMD_SetBuffer(Animation_GetBufferAddr());
@@ -118,15 +110,24 @@ static void _TamagoThread(void* pArg)
     {
         _SetAnimationByStats(pstStats);
 
-        #ifdef USE_BMP180
-        int8_t s8Temp = 0;
-        BMP180_ReadTemperature(&s8Temp);
-        Clock_SetTemperature(s8Temp);
-        #endif
+        if (500 <= u16Cnt)
+        {
+            // These operations are executed approx. every 500ms
+            #ifdef USE_BMP180
+            int8_t s8Temp = 0;
+            BMP180_ReadTemperature(&s8Temp);
+            Clock_SetTemperature(s8Temp);
+            #endif
+
+            Animation_Update();
+            u16Cnt = 0;
+        }
 
         Clock_Update();
         DMD_Update();
-        osDelay(5);
+
+        osDelay(1);
+        u16Cnt++;
     }
 }
 
@@ -137,8 +138,6 @@ static void _TamagoThread(void* pArg)
  */
 static void _SetAnimationByStats(Stats* pstStats)
 {
-    Animation_SetUpdateRate(500);
-
     switch (pstStats->eEvolution)
     {
         case EGG:
@@ -178,7 +177,6 @@ static void _SetAnimationByStats(Stats* pstStats)
             Animation_Set(IDLE_OYAJITCHI);
             break;
         case OBAKETCHI:
-            Animation_SetUpdateRate(750);
             Animation_Set(IDLE_OBAKETCHI);
             break;
     }
